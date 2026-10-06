@@ -118,7 +118,7 @@ export async function uploadVideo(file: File, onProgress?: (p: number) => void):
   // Upload all chunks
   for (const f of hlsFiles) {
     const fileData = await ff.readFile(f.name);
-    const blob = new Blob([fileData]);
+    const blob = new Blob([fileData as any]);
     const filePath = `videos/${folderId}/${f.name}`;
     
     await supabase.storage

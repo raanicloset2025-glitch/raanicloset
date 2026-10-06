@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { User, Package, Clock, LogOut, X, Scissors, MapPin } from 'lucide-react';
@@ -62,8 +62,14 @@ export default function AccountMenu({ isMobile = false, isJewelry = false }: Acc
     }
   };
 
-  const handleLogoutClick = (e: React.MouseEvent) => {
+  const handleLogoutClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    try {
+      const { supabase } = await import('@/lib/supabaseClient');
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error(err);
+    }
     logout();
     setIsOpen(false);
   };
