@@ -1,29 +1,56 @@
 "use client";
 
-import { signIn, useSession } from "next-auth/react";
+import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import InstallAppButton from "@/components/InstallAppButton";
 
 export default function LoginPage() {
-  const { data: session, status } = useSession();
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
 
-  // If already logged in, redirect to dashboard
+  // Check if logged in via Supabase
   useEffect(() => {
-    if (status === "authenticated") {
-      router.push("/");
-    }
-  }, [status, router]);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        router.push("/");
+      } else {
+        setLoading(false);
+      }
+    });
 
-  if (status === "loading") {
+    // Listen for changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        router.push("/");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [router]);
+
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050102]">
         <Loader2 className="w-8 h-8 animate-spin text-[#CBA153]" />
       </div>
     );
   }
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+      }
+    });
+    if (error) {
+      alert("Error logging in: " + error.message);
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#050102] relative overflow-hidden px-4">
@@ -56,7 +83,7 @@ export default function LoginPage() {
             </div>
 
             <button
-              onClick={() => signIn("google", { callbackUrl: "/" })}
+              onClick={handleGoogleLogin}
               type="button"
               className="mt-6 w-full bg-[#050102] border border-white/[0.08] hover:border-[#CBA153]/50 text-[#F9F6F0] hover:text-[#CBA153] py-3.5 text-[10px] font-bold uppercase tracking-[0.25em] transition-all duration-300 flex items-center justify-center gap-3 group"
             >
@@ -76,7 +103,7 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-8 text-center text-[#1a1a1a] text-[9px] uppercase tracking-[0.2em]">
-          © {new Date().getFullYear()} Maison Raani. All Rights Reserved.
+          Ac {new Date().getFullYear()} Maison Raani. All Rights Reserved.
         </p>
       </div>
     </div>

@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
-import { signIn } from "next-auth/react";
+import { supabase } from '@/lib/supabaseClient';
 
 export default function AuthModal() {
   const isAuthModalOpen = useStore((state) => state.isAuthModalOpen);
   const setAuthModalOpen = useStore((state) => state.setAuthModalOpen);
   const isJewelry = useStore((state) => state.isJewelry);
+  const setUser = useStore((state) => state.setUser);
   
   const [step, setStep] = useState<'email' | 'otp' | 'google-loading'>('email');
   const [email, setEmail] = useState('');
@@ -18,40 +19,52 @@ export default function AuthModal() {
     setIsClient(true);
   }, []);
 
-  // Reset modal state when it closes
-  useEffect(() => {
-    if (!isAuthModalOpen) {
-      setStep('email');
-      setEmail('');
-      setOtp('');
-    }
-  }, [isAuthModalOpen]);
-
   if (!isClient || !isAuthModalOpen) return null;
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.includes('@')) {
-      setStep('otp'); // In reality, here you would call a backend API to SEND the OTP via email
+    if (email) {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email,
+      });
+      if (error) {
+        alert("Error sending OTP: " + error.message);
+      } else {
+        setStep('otp');
+      }
     }
   };
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (otp.length >= 4) {
-      // Call NextAuth Credentials provider (OTP flow)
-      await signIn("credentials", {
+    if (otp.length >= 6) {
+      const { data, error } = await supabase.auth.verifyOtp({
         email,
-        otp,
-        callbackUrl: "/",
+        token: otp,
+        type: 'email'
       });
+      
+      if (error) {
+        alert("Invalid OTP: " + error.message);
+      } else if (data.user) {
+        setUser({ id: data.user.id, email: data.user.email!, name: data.user.email?.split('@')[0] || "User" });
+        setAuthModalOpen(false);
+      }
     }
   };
 
   const handleGoogleLogin = async () => {
     setStep('google-loading');
-    // Call NextAuth Google provider
-    await signIn("google", { callbackUrl: "/" });
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+      }
+    });
+    if (error) {
+      alert("Google Login Error: " + error.message);
+      setStep('email');
+    }
   };
 
   return (
@@ -171,6 +184,7 @@ export default function AuthModal() {
             </div>
 
             <button 
+              type="button"
               onClick={handleGoogleLogin}
               className={`w-full h-12 flex items-center justify-center gap-3 font-sans text-[10px] uppercase tracking-[0.2em] font-semibold transition-all duration-300 border ${
                 isJewelry 
