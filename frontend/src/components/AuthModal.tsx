@@ -139,6 +139,16 @@ export default function AuthModal() {
                 Verify & Enter
               </button>
             </form>
+            
+            <button 
+              type="button"
+              onClick={handleEmailSubmit}
+              className={`mt-6 w-full text-center font-sans text-[10px] uppercase tracking-[0.2em] transition-colors ${
+                isJewelry ? 'text-slate-400 hover:text-white' : 'text-[#603D3D] hover:text-black'
+              }`}
+            >
+              Resend OTP
+            </button>
           </>
         ) : (
           <>
