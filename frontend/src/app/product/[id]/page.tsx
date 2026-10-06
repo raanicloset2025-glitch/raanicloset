@@ -239,4 +239,6 @@ export default function ProductDetail() {
   );
 }
 
+
+
 export const runtime = 'edge';
