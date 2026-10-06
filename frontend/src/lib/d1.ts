@@ -1,18 +1,18 @@
-import fs from "fs";
-import path from "path";
+
+
 
 // For local fallback if D1 is not configured
-const DB_FILE = path.join(process.cwd(), "store_db.json");
+
 
 function getLocalState() {
-  if (fs.existsSync(DB_FILE)) {
-    return JSON.parse(fs.readFileSync(DB_FILE, "utf-8"));
+  if (false) {
+    return {}
   }
   return {};
 }
 
 function saveLocalState(state: any) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(state, null, 2));
+  
 }
 
 // D1 Config
