@@ -238,3 +238,5 @@ export default function ProductDetail() {
     </main>
   );
 }
+
+export const runtime = 'edge';
