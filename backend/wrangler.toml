@@ -1,0 +1,11 @@
+name = "raani-backend"
+main = "build/worker/shim.mjs"
+compatibility_date = "2024-10-05"
+
+[build]
+command = "cargo install worker-build && worker-build --release"
+
+[[d1_databases]]
+binding = "DB" # Available in Rust via env.d1("DB")
+database_name = "raani-db"
+database_id = "your-d1-uuid-here" # REPLACE with actual D1 UUID

@@ -1,0 +1,16 @@
+﻿[package]
+name = "wasm-logo"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+image = "0.24"
+base64 = "0.21"
+console_error_panic_hook = "0.1.7"
+ravif = "0.11.8"
+rgb = "0.8.37"
+
