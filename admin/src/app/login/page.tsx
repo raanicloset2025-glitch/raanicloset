@@ -150,14 +150,24 @@ export default function LoginPage() {
                   </button>
                 </form>
                 
-                <button 
-                  type="button"
-                  onClick={handleEmailSubmit}
-                  disabled={authLoading}
-                  className="mt-6 w-full text-center font-sans text-[9px] uppercase tracking-[0.2em] text-[#555] hover:text-[#CBA153] transition-colors disabled:opacity-50"
-                >
-                  Resend OTP
-                </button>
+                <div className="mt-6 flex flex-col gap-4">
+                  <button 
+                    type="button"
+                    onClick={handleEmailSubmit}
+                    disabled={authLoading}
+                    className="w-full text-center font-sans text-[9px] uppercase tracking-[0.2em] text-[#555] hover:text-[#CBA153] transition-colors disabled:opacity-50"
+                  >
+                    Resend OTP
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setStep('email')}
+                    disabled={authLoading}
+                    className="w-full text-center font-sans text-[9px] uppercase tracking-[0.2em] text-[#555] hover:text-white transition-colors disabled:opacity-50"
+                  >
+                    ← Back to Email
+                  </button>
+                </div>
               </>
             ) : (
               <>
