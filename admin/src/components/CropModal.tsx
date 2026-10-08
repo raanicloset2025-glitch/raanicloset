@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useRef } from "react";
 import ReactCrop, { Crop, PixelCrop } from "react-image-crop";
@@ -140,7 +140,7 @@ export default function CropModal({
             Cancel
           </button>
           <button
-            onClick={CreateCroppedImage}
+            onClick={createCroppedImage}
             disabled={isCompressing || !completedCrop?.width || !completedCrop?.height}
             className="flex items-center gap-2 px-6 py-2.5 bg-[#CBA153] hover:bg-[#DFB76C] text-[#1A1A1A] font-bold text-xs uppercase tracking-widest rounded-full transition-all disabled:opacity-50"
           >
