@@ -5,6 +5,25 @@ import { useAdminStore } from "@/store/useAdminStore";
 import { Plus, X, Search, Zap, Check } from "lucide-react";
 
 export default function SearchEditor() {
+  const [store, setStore] = React.useState<any>({});
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+    setStore(useAdminStore.getState());
+    
+    useAdminStore.getState().fetchFromServer?.().then(() => {
+      setStore(useAdminStore.getState());
+    });
+
+    const unsub = useAdminStore.subscribe((state: any) => {
+      setStore(state);
+    });
+    return unsub;
+  }, []);
+
+  if (!mounted || !store.setTrendingSearchesClothing) return null;
+
   const {
     trendingSearchesClothing,
     setTrendingSearchesClothing,
@@ -23,7 +42,7 @@ export default function SearchEditor() {
     clothingCategories,
     jewelryCategories,
     products,
-  } = useAdminStore();
+  } = store;
 
   const [newSynonymKey, setNewSynonymKey] = useState("");
   const [newSynonymValue, setNewSynonymValue] = useState("");

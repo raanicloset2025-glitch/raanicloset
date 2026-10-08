@@ -3,11 +3,9 @@
 import React from 'react';
 import { useStore } from '@/store/useStore';
 import { useAdminStore } from '@/store/useAdminStore';
-import Link from 'next/link';
 import Image from 'next/image';
 
 export default function HeroSection() {
-  const [isMobile, setIsMobile] = React.useState(true); // Default true for safer hydration
   const isJewelry = useStore((state) => state.isJewelry);
 
   const [adminStore, setAdminStore] = React.useState<any>({});
@@ -27,13 +25,6 @@ export default function HeroSection() {
       setAdminStore(state);
     });
     return unsub;
-  }, []);
-
-  React.useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   // Fetch dynamic content from Admin Store based on active theme

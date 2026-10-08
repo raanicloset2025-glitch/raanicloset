@@ -4,7 +4,24 @@ import React from 'react';
 import { useAdminStore } from '@/store/useAdminStore';
 
 export default function StoryEditor() {
-  const store = useAdminStore();
+    const [store, setStore] = React.useState<any>({});
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+    setStore(useAdminStore.getState());
+    
+    useAdminStore.getState().fetchFromServer?.().then(() => {
+      setStore(useAdminStore.getState());
+    });
+
+    const unsub = useAdminStore.subscribe((state: any) => {
+      setStore(state);
+    });
+    return unsub;
+  }, []);
+
+  if (!mounted || !store.setBrandName) return null;
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-32">

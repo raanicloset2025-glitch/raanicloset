@@ -5,7 +5,24 @@ import { useAdminStore } from "@/store/useAdminStore";
 import { uploadImage } from "@/lib/uploadHelper";
 
 export default function NavbarEditor() {
-  const store = useAdminStore();
+    const [store, setStore] = React.useState<any>({});
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+    setStore(useAdminStore.getState());
+    
+    useAdminStore.getState().fetchFromServer?.().then(() => {
+      setStore(useAdminStore.getState());
+    });
+
+    const unsub = useAdminStore.subscribe((state: any) => {
+      setStore(state);
+    });
+    return unsub;
+  }, []);
+
+  if (!mounted || !store.setBrandName) return null;
   
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'clothing' | 'jewelry' | 'tab') => {
     const file = e.target.files?.[0];

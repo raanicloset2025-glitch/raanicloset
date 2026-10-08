@@ -6,7 +6,24 @@ import VideoUploadGroup from "./VideoUploadGroup";
 import { useAdminStore } from "@/store/useAdminStore";
 
 export default function HeroEditor() {
-  const store = useAdminStore();
+    const [store, setStore] = React.useState<any>({});
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+    setStore(useAdminStore.getState());
+    
+    useAdminStore.getState().fetchFromServer?.().then(() => {
+      setStore(useAdminStore.getState());
+    });
+
+    const unsub = useAdminStore.subscribe((state: any) => {
+      setStore(state);
+    });
+    return unsub;
+  }, []);
+
+  if (!mounted || !store.setBrandName) return null;
   const [activeMode, setActiveMode] = useState<"clothing" | "jewelry">("clothing");
   const [devicePreview, setDevicePreview] = useState<"desktop" | "mobile">("desktop");
 

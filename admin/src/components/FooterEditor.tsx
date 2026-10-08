@@ -26,7 +26,24 @@ const TABS = [
 ] as const;
 
 export default function FooterEditor() {
-  const store = useAdminStore();
+    const [store, setStore] = React.useState<any>({});
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+    setStore(useAdminStore.getState());
+    
+    useAdminStore.getState().fetchFromServer?.().then(() => {
+      setStore(useAdminStore.getState());
+    });
+
+    const unsub = useAdminStore.subscribe((state: any) => {
+      setStore(state);
+    });
+    return unsub;
+  }, []);
+
+  if (!mounted || !store.setBrandName) return null;
   const [activeTab, setActiveTab] = useState<typeof TABS[number]['id']>('concierge');
 
   return (

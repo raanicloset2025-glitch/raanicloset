@@ -9,7 +9,27 @@ export default function BespokeEditor() {
   const [activeMode, setActiveMode] = useState<"clothing" | "jewelry">("clothing");
   const [devicePreview, setDevicePreview] = useState<"desktop" | "mobile">("desktop");
 
-  const store = useAdminStore();
+  // Safe hydration for large Zustand store
+  const [store, setStore] = React.useState<any>({});
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+    setStore(useAdminStore.getState());
+    
+    // Fetch latest from server on mount
+    useAdminStore.getState().fetchFromServer?.().then(() => {
+      setStore(useAdminStore.getState());
+    });
+
+    // Subscribe to store changes
+    const unsub = useAdminStore.subscribe((state: any) => {
+      setStore(state);
+    });
+    return unsub;
+  }, []);
+
+  if (!mounted || !store.setBespokeEyebrow) return null;
 
   const current = {
     videoVp9: activeMode === 'clothing' ? store.clothingBespokeVideo : store.jewelryBespokeVideo,

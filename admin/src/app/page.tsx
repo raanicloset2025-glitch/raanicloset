@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import VideoUploadGroup from "@/components/VideoUploadGroup";
 import HeroEditor from "@/components/HeroEditor";
 import BespokeEditor from "@/components/BespokeEditor";
 import FooterEditor from "@/components/FooterEditor";
@@ -71,7 +70,7 @@ export default function AdminDashboard() {
   }, [router]);
 
   // Store access
-  const adminState = useAdminStore();
+  // adminState is retrieved using getState() on demand to avoid re-renders
   // @ts-ignore
   const fetchProducts = useAdminStore((s) => s.fetchProducts);
   
@@ -106,7 +105,7 @@ export default function AdminDashboard() {
     setPublishMessage(null);
     try {
       // Exclude functions and internal state from payload
-      const stateObj = adminState as any;
+      const stateObj = useAdminStore.getState() as any;
       const payload = Object.fromEntries(
         Object.entries(stateObj).filter(([_, v]) => typeof v !== 'function')
       );
