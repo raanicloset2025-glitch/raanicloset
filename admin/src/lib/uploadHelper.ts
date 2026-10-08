@@ -32,7 +32,7 @@ export async function uploadImage(file: File, onProgress?: (p: number) => void):
     onProgress?.(100);
 
     const { data: publicUrlData } = supabase.storage.from(BUCKET_NAME).getPublicUrl(filePath);
-    return publicUrlData.publicUrl;
+    return publicUrlData.publicUrl.replace(/\s/g, '%20');
   } catch (error) {
     console.error("Image upload failed:", error);
     throw error;
@@ -73,7 +73,7 @@ export async function uploadVideo(file: File, onProgress?: (p: number) => void):
     onProgress?.(100);
 
     const { data: publicUrlData } = supabase.storage.from(BUCKET_NAME).getPublicUrl(filePath);
-    return publicUrlData.publicUrl;
+    return publicUrlData.publicUrl.replace(/\s/g, '%20');
   }
 
   // If heavy video (>45MB), use FFmpeg chunking (HLS)
