@@ -13,8 +13,6 @@ export default function StoryEpilogue() {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
 
-  if (showStoryEpilogue === false) return null;
-
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -31,6 +29,8 @@ export default function StoryEpilogue() {
     }
     return () => observer.disconnect();
   }, []);
+
+  if (showStoryEpilogue === false) return null;
 
   return (
     <section 
