@@ -13,6 +13,7 @@ export default function AuthModal() {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [isClient, setIsClient] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
     setIsClient(true);
@@ -23,11 +24,12 @@ export default function AuthModal() {
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
+      setErrorMsg("");
       const { error } = await supabase.auth.signInWithOtp({
         email: email,
       });
       if (error) {
-        alert("Error sending OTP: " + error.message);
+        setErrorMsg(error.message);
       } else {
         setStep('otp');
       }
@@ -37,6 +39,7 @@ export default function AuthModal() {
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (otp.length >= 6) {
+      setErrorMsg("");
       const { data, error } = await supabase.auth.verifyOtp({
         email,
         token: otp,
@@ -44,7 +47,7 @@ export default function AuthModal() {
       });
       
       if (error) {
-        alert("Invalid OTP: " + error.message);
+        setErrorMsg(error.message);
       } else if (data.user) {
         setAuthModalOpen(false);
       }
@@ -52,6 +55,7 @@ export default function AuthModal() {
   };
 
   const handleGoogleLogin = async () => {
+    setErrorMsg("");
     setStep('google-loading');
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -60,7 +64,7 @@ export default function AuthModal() {
       }
     });
     if (error) {
-      alert("Google Login Error: " + error.message);
+      setErrorMsg(error.message);
       setStep('email');
     }
   };
@@ -92,6 +96,12 @@ export default function AuthModal() {
             <path d="M18 6L6 18M6 6l12 12"/>
           </svg>
         </button>
+
+        {errorMsg && (
+          <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded text-center">
+            <p className="text-[10px] text-red-500 font-sans tracking-widest uppercase">{errorMsg}</p>
+          </div>
+        )}
 
         {step === 'google-loading' ? (
            <div className="flex flex-col items-center justify-center py-10">

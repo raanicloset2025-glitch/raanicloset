@@ -15,6 +15,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   // Check if logged in via Supabase
   useEffect(() => {
@@ -39,13 +40,14 @@ export default function LoginPage() {
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
+      setErrorMsg("");
       setAuthLoading(true);
       const { error } = await supabase.auth.signInWithOtp({
         email: email,
       });
       setAuthLoading(false);
       if (error) {
-        alert("Error sending OTP: " + error.message);
+        setErrorMsg(error.message);
       } else {
         setStep('otp');
       }
@@ -55,6 +57,7 @@ export default function LoginPage() {
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (otp.length >= 6) {
+      setErrorMsg("");
       setAuthLoading(true);
       const { error } = await supabase.auth.verifyOtp({
         email,
@@ -64,12 +67,13 @@ export default function LoginPage() {
       setAuthLoading(false);
       
       if (error) {
-        alert("Invalid OTP: " + error.message);
+        setErrorMsg(error.message);
       }
     }
   };
 
   const handleGoogleLogin = async () => {
+    setErrorMsg("");
     setStep('google-loading');
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -78,7 +82,7 @@ export default function LoginPage() {
       }
     });
     if (error) {
-      alert("Error logging in: " + error.message);
+      setErrorMsg(error.message);
       setStep('email');
     }
   };
@@ -114,6 +118,12 @@ export default function LoginPage() {
           <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#CBA153]/50 to-transparent" />
 
           <div className="p-8 md:p-10">
+            {errorMsg && (
+              <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded text-center">
+                <p className="text-[10px] text-red-400 font-sans tracking-widest uppercase">{errorMsg}</p>
+              </div>
+            )}
+            
             {step === 'google-loading' ? (
                <div className="flex flex-col items-center justify-center py-10">
                  <Loader2 className="w-8 h-8 animate-spin text-[#CBA153]" />
