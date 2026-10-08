@@ -242,4 +242,4 @@ export default function ProductDetail() {
 
 
 
-export const runtime = 'edge';
+// removed edge runtime
