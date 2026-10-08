@@ -124,4 +124,37 @@ Verify that Framer Motion or CSS animations are using hardware-accelerated prope
 - [ ] Above-the-fold assets must load instantly to satisfy Google's LCP metrics.
 - [ ] Existing functionality remains identical to the user.
 
+## 2026-10-08T08:34:37Z
+
+# Teamwork Project Prompt — Draft
+
+> Status: Launched
+> Goal: Craft prompt → get user approval → delegate to teamwork_preview
+> Requested team: Full Team
+
+Conduct a massive general cleanup using a very large team of agents to find and fix any hidden bugs, logic errors, or performance issues across the Raani Closet Next.js application.
+
+Working directory: ~/teamwork_projects/raani_closet
+Integrity mode: development
+
+## Requirements
+
+### R1. Functional Bug Fixes
+Review the `admin/src` and `frontend/src` directories for hidden logic bugs, race conditions, hydration mismatches, and dead code. Fix any issues found to ensure maximum stability.
+
+### R2. Strict UI Preservation
+Do NOT alter any user-facing UI, layouts, framer-motion animations, CSS styling, or colors. The aesthetic must remain exactly as it is; all changes must be strictly logical and functional.
+
+## Acceptance Criteria
+
+### Build & Type Safety
+- [ ] Running `npx tsc --noEmit` in the `admin` directory completes with 0 errors.
+- [ ] Running `npx tsc --noEmit` in the `frontend` directory completes with 0 errors.
+- [ ] Both directories can successfully complete an optimized Next.js build without crashing.
+
+## 2026-10-08T08:35:20Z
+
+The user has provided an additional critical instruction: "Tell the team to specifically focus heavily on ensuring the login system, photo upload, and video upload logic are absolutely perfect." Please prioritize these specific flows during your cleanup and bug-hunting operation.
+
+
 

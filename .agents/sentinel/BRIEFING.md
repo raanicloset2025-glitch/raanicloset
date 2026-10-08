@@ -1,7 +1,7 @@
-# BRIEFING — 2026-10-06T04:06:00Z
+# BRIEFING — 2026-10-08T08:37:00Z
 
 ## Mission
-Coordinate and monitor the migration of global store settings to Rust D1 backend with Cloudflare deployment compatibility, safe admin integration, and frontend dynamic SEO, enforcing strict 4x code verification.
+Coordinate and monitor the massive general cleanup and logic hardening across Raani Closet Next.js application (admin and frontend), focusing heavily on login, photo upload, and video upload logic while preserving 100% of the luxury UI and animations.
 
 ## 🔒 My Identity
 - Archetype: sentinel
@@ -10,6 +10,7 @@ Coordinate and monitor the migration of global store settings to Rust D1 backend
 - Victory Auditor: to be spawned on victory claim
 - Active working directory: c:\Users\satya\Documents\antigravity\modest-hypatia\.agents\sentinel
 - Active Orchestrator: 44ab93d7-d8b8-4293-92d7-c5de155d5331
+- Active Orchestrator (Cleanup & Logic Hardening): 6770afae-23b5-416a-b914-ce3bb5470dd3
 
 ## 🔒 Key Constraints
 - No technical decisions — relay only
@@ -18,20 +19,23 @@ Coordinate and monitor the migration of global store settings to Rust D1 backend
 - Must maintain crons for progress reporting and liveness check
 - Strict 4x code review and validation; benchmark integrity mode (no altering existing UI/frontend/admin functionality)
 - Zero regression on existing UI or frontend/admin functionality
+- Strict UI Preservation: Do NOT alter any user-facing UI, layouts, framer-motion animations, CSS styling, or colors
+- Critical user priority: Login system, photo upload, and video upload logic must be hardened and verified functional
+- Acceptance criteria: npx tsc --noEmit (0 errors) and Next.js production build pass in both admin and frontend
 
 ## User Context
-- **Last user request**: System resumed after quota recovery. Continue execution of global store settings migration to Rust D1 backend (R1 complete, R2 Safe Admin Integration in admin/src/app/page.tsx, R3 Dynamic SEO in frontend/src/app/layout.tsx).
+- **Last user request**: Massive general cleanup of Raani Closet Next.js app (admin/src and frontend/src) for hidden bugs, logic errors, race conditions, hydration mismatches, dead code; user priority focus on login, photo upload, and video upload logic. Strict UI preservation.
 - **Pending clarifications**: none
-- **Delivered results**: Milestone 1 (Backend D1 Settings table, GET/POST endpoints, CORS) completed and verified with cargo check (0 errors).
+- **Delivered results**: Dispatch completed, monitoring crons scheduled, orchestrator active.
 
 ## Project Status
-- **Phase**: in progress (Milestones 2 & 3 executing)
+- **Phase**: in progress (Milestone 1 Reconnaissance & Critical Flow Analysis)
 - **Route**: General -> teamwork_preview_orchestrator
-- **Routing Rationale**: Multi-component SWE project across Rust backend, Next.js admin, and Next.js frontend.
-- **Active Orchestrator ID**: 44ab93d7-d8b8-4293-92d7-c5de155d5331
-- **Working Directory**: c:\Users\satya\Documents\antigravity\modest-hypatia\.agents\orchestrator_2
-- **Cron 1 (Progress Reporting, */8)**: task-1232
-- **Cron 2 (Liveness Check, */10)**: task-1234
+- **Routing Rationale**: Full-application bug hunt, logic hardening, and Next.js builds across multiple workspaces.
+- **Active Orchestrator ID**: 6770afae-23b5-416a-b914-ce3bb5470dd3
+- **Working Directory**: c:\Users\satya\Documents\antigravity\modest-hypatia\.agents\orchestrator_5
+- **Cron 1 (Progress Reporting, */8)**: task-35
+- **Cron 2 (Liveness Check, */10)**: task-37
 
 ## Victory Audit Status
 - **Triggered**: no
@@ -39,7 +43,6 @@ Coordinate and monitor the migration of global store settings to Rust D1 backend
 - **Retry count**: 0
 
 ## Artifact Index
-- c:\Users\satya\Documents\antigravity\modest-hypatia\.agents\ORIGINAL_REQUEST.md — Authoritative user request
-- c:\Users\satya\Documents\antigravity\modest-hypatia\.agents\worker_m1_repl\handoff.md — Milestone 1 completed handoff
-- c:\Users\satya\Documents\antigravity\modest-hypatia\.agents\orchestrator_2\PROJECT.md — Architecture & Milestones
-- c:\Users\satya\Documents\antigravity\modest-hypatia\.agents\orchestrator_2\progress.md — Orchestrator liveness tracking
+- c:\Users\satya\Documents\antigravity\modest-hypatia\.agents\ORIGINAL_REQUEST.md — Authoritative user requests
+- c:\Users\satya\Documents\antigravity\modest-hypatia\.agents\orchestrator_5\DISPATCH.md — Orchestrator 5 dispatch parameters
+- c:\Users\satya\Documents\antigravity\modest-hypatia\.agents\orchestrator_5\progress.md — Active orchestrator progress tracking
