@@ -92,7 +92,8 @@ export const useStore = create<AppState>()(persist((set) => ({
             email: session.user.email!, 
             name: metadata?.name || metadata?.full_name || session.user.email?.split('@')[0] || 'User',
             avatar_url: metadata?.avatar_url || metadata?.picture
-          } 
+          },
+          isAuthModalOpen: false
         });
       } else {
         set({ user: null });
@@ -107,7 +108,8 @@ export const useStore = create<AppState>()(persist((set) => ({
             email: session.user.email!, 
             name: metadata?.name || metadata?.full_name || session.user.email?.split('@')[0] || 'User',
             avatar_url: metadata?.avatar_url || metadata?.picture
-          } 
+          },
+          isAuthModalOpen: false
         });
       } else {
         set({ user: null });
@@ -144,4 +146,13 @@ export const useStore = create<AppState>()(persist((set) => ({
     }
     return { wishlistItems: [...state.wishlistItems, { ...item, quantity: 1 }] };
   }),
-}), { name: 'raani-frontend-storage' }));
+}), { 
+  name: 'raani-frontend-storage',
+  partialize: (state) => ({ 
+    isJewelry: state.isJewelry,
+    activeClothingCategory: state.activeClothingCategory,
+    activeJewelryCategory: state.activeJewelryCategory,
+    cartItems: state.cartItems,
+    wishlistItems: state.wishlistItems,
+  })
+}));
