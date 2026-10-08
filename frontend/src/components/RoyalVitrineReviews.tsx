@@ -26,6 +26,10 @@ export default function RoyalVitrineReviews() {
   const reviewsEyebrow = useAdminStore((s: any) => s.reviewsEyebrow);
   const reviewsTitleNormal = useAdminStore((s: any) => s.reviewsTitleNormal);
   const reviewsTitleItalic = useAdminStore((s: any) => s.reviewsTitleItalic);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  
+  if (!mounted) return <div className="py-24" />;
   
   // removed duplicate displayReviews
   const containerRef = useRef<HTMLDivElement>(null);

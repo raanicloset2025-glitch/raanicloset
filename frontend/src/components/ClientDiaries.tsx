@@ -27,6 +27,9 @@ export default function ClientDiaries() {
   const displayPhotos = [...allPhotos, ...allPhotos, ...allPhotos];
 
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return <div className="min-h-screen" />;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
