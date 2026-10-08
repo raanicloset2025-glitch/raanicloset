@@ -1,9 +1,9 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useRef } from "react";
 import { useAdminStore, CategoryItem, Product } from "@/store/useAdminStore";
 import { AnimatePresence, motion } from "framer-motion";
-import { Star, Trash2, Plus, Edit2, Check, X, Image as ImageIcon } from "lucide-react";
+import { Star, Trash2, Plus, Edit2, Check, X, Image as ImageIcon, Loader2 } from "lucide-react";
 
 // ─── Toast ───────────────────────────────────────────────────────────────────
 function Toast({ message, type }: { message: string; type: "success" | "error" }) {
@@ -51,12 +51,25 @@ function CategoryRow({ cat, type }: { cat: CategoryItem; type: "clothing" | "jew
   const updateCategory = useAdminStore((s) => s.updateCategory);
   const deleteCategory = useAdminStore((s) => s.deleteCategory);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    updateCategory(cat.id, { image: url }, type);
+
+    setIsUploading(true);
+    try {
+      const { uploadMediaToSupabase } = await import("@/lib/supabase");
+      const ext = file.name.split('.').pop() || 'webp';
+      const filePath = `images/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
+      const publicUrl = await uploadMediaToSupabase(file, 'raani closet image and product', filePath);
+      updateCategory(cat.id, { image: publicUrl }, type);
+    } catch (err) {
+      console.error("Category image upload failed:", err);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -69,10 +82,14 @@ function CategoryRow({ cat, type }: { cat: CategoryItem; type: "clothing" | "jew
       className="flex items-center gap-4 bg-[#111] border border-white/8 rounded-2xl px-4 py-3 group"
     >
       {/* Category Image */}
-      <button onClick={() => fileRef.current?.click()} className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-[#CBA153]/30 hover:border-[#CBA153] transition-colors shrink-0">
+      <button
+        onClick={() => fileRef.current?.click()}
+        disabled={isUploading}
+        className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-[#CBA153]/30 hover:border-[#CBA153] transition-colors shrink-0 disabled:opacity-50"
+      >
         <img src={cat.image} alt={cat.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-          <ImageIcon size={14} className="text-white" />
+          {isUploading ? <Loader2 size={14} className="text-[#CBA153] animate-spin" /> : <ImageIcon size={14} className="text-white" />}
         </div>
       </button>
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
@@ -110,6 +127,7 @@ function ProductRow({ product, onToast }: { product: Product; onToast: (m: strin
   const deleteProduct = useAdminStore((s) => s.deleteProduct);
   const updateProduct = useAdminStore((s) => s.updateProduct);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const starredCount = useAdminStore((s) => s.products.filter((p) => p.isStarred).length);
 
   const handleStar = () => {
@@ -117,11 +135,25 @@ function ProductRow({ product, onToast }: { product: Product; onToast: (m: strin
     onToast(result.message, result.success ? "success" : "error");
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    updateProduct(product.id, { imageSrc: url, images: [url, url, url] });
+
+    setIsUploading(true);
+    try {
+      const { uploadMediaToSupabase } = await import("@/lib/supabase");
+      const ext = file.name.split('.').pop() || 'webp';
+      const filePath = `images/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
+      const publicUrl = await uploadMediaToSupabase(file, 'raani closet image and product', filePath);
+      updateProduct(product.id, { imageSrc: publicUrl, images: [publicUrl, publicUrl, publicUrl] });
+      onToast("Image uploaded successfully", "success");
+    } catch (err) {
+      console.error("Product photo upload failed:", err);
+      onToast("Image upload failed", "error");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -134,10 +166,14 @@ function ProductRow({ product, onToast }: { product: Product; onToast: (m: strin
       className="flex items-center gap-4 bg-[#111] border border-white/8 rounded-2xl px-4 py-3 group"
     >
       {/* Product Image */}
-      <button onClick={() => fileRef.current?.click()} className="relative w-12 h-16 rounded-xl overflow-hidden border border-white/10 hover:border-[#CBA153]/50 transition-colors shrink-0">
+      <button
+        onClick={() => fileRef.current?.click()}
+        disabled={isUploading}
+        className="relative w-12 h-16 rounded-xl overflow-hidden border border-white/10 hover:border-[#CBA153]/50 transition-colors shrink-0 disabled:opacity-50"
+      >
         <img src={product.imageSrc} alt={product.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-          <ImageIcon size={14} className="text-white" />
+          {isUploading ? <Loader2 size={14} className="text-[#CBA153] animate-spin" /> : <ImageIcon size={14} className="text-white" />}
         </div>
       </button>
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />

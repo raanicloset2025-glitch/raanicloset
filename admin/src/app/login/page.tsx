@@ -8,7 +8,16 @@ import dynamic from 'next/dynamic';
 
 const InstallAppButton = dynamic(() => import("@/components/InstallAppButton"), { ssr: false });
 
-const ALLOWED_EMAILS = ['raanicloset2025@gmail.com'];
+const ALLOWED_ADMINS = (
+  process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'raanicloset2025@gmail.com'
+)
+  .split(',')
+  .map((e) => e.trim().toLowerCase());
+
+function isAllowedAdmin(email?: string | null): boolean {
+  if (!email) return false;
+  return ALLOWED_ADMINS.includes(email.trim().toLowerCase());
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,20 +29,31 @@ export default function LoginPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
 
-  // Cooldown timer
+  // Parse errors from OAuth redirect or route guards on mount
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (resendCooldown > 0) {
-      timer = setInterval(() => {
-        setResendCooldown((prev) => prev - 1);
-      }, 1000);
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const err = params.get('error');
+      if (err === 'unauthorized') {
+        setErrorMsg("Access Denied: You are not authorized to access the Admin Panel.");
+      } else if (err) {
+        setErrorMsg(decodeURIComponent(err));
+      }
     }
-    return () => clearInterval(timer);
+  }, []);
+
+  // Cooldown timer using setTimeout to avoid interval leaks
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => {
+      setResendCooldown((prev) => prev - 1);
+    }, 1000);
+    return () => clearTimeout(timer);
   }, [resendCooldown]);
 
   const verifyAdminStatus = async (session: any) => {
-    const userEmail = session?.user?.email?.toLowerCase();
-    if (!userEmail || !ALLOWED_EMAILS.includes(userEmail)) {
+    const userEmail = session?.user?.email?.toLowerCase()?.trim();
+    if (!userEmail || !isAllowedAdmin(userEmail)) {
       await supabase.auth.signOut();
       setErrorMsg("Access Denied: You are not authorized to access the Admin Panel.");
       setStep('email');
@@ -45,14 +65,20 @@ export default function LoginPage() {
 
   // Check if logged in via Supabase
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session) {
-        const isAdmin = await verifyAdminStatus(session);
-        if (isAdmin) router.push("/");
-      } else {
+    supabase.auth
+      .getSession()
+      .then(async ({ data: { session } }) => {
+        if (session) {
+          const isAdmin = await verifyAdminStatus(session);
+          if (isAdmin) router.push("/");
+        } else {
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error("[Login] Session check error:", err);
         setLoading(false);
-      }
-    });
+      });
 
     // Listen for changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -67,60 +93,93 @@ export default function LoginPage() {
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && resendCooldown === 0 && !authLoading) {
-      setErrorMsg("");
-      
-      const checkEmail = email.toLowerCase().trim();
-      if (!ALLOWED_EMAILS.includes(checkEmail)) {
-        setErrorMsg("Access Denied: You are not authorized to access the Admin Panel.");
-        return;
-      }
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || resendCooldown > 0 || authLoading) return;
 
-      setAuthLoading(true);
+    setErrorMsg("");
+
+    if (!isAllowedAdmin(cleanEmail)) {
+      setErrorMsg("Access Denied: You are not authorized to access the Admin Panel.");
+      return;
+    }
+
+    setAuthLoading(true);
+    try {
       const { error } = await supabase.auth.signInWithOtp({
-        email: email,
+        email: cleanEmail,
+        options: {
+          shouldCreateUser: false,
+          emailRedirectTo: window.location.origin,
+        },
       });
-      setAuthLoading(false);
+
       if (error) {
         setErrorMsg(error.message);
       } else {
         setResendCooldown(60); // 60 seconds cooldown
         setStep('otp');
       }
+    } catch (err: any) {
+      console.error("[Login] OTP request failed:", err);
+      setErrorMsg(err?.message || "Failed to send verification code. Please check your network connection.");
+    } finally {
+      setAuthLoading(false);
     }
   };
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (otp.length >= 6) {
-      setErrorMsg("");
-      setAuthLoading(true);
+    const cleanOtp = otp.trim();
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (cleanOtp.length < 6 || authLoading) {
+      if (cleanOtp.length < 6) setErrorMsg("Please enter the complete 6-digit code.");
+      return;
+    }
+
+    setErrorMsg("");
+    setAuthLoading(true);
+
+    try {
       const { data, error } = await supabase.auth.verifyOtp({
-        email,
-        token: otp,
-        type: 'email'
+        email: cleanEmail,
+        token: cleanOtp,
+        type: 'email',
       });
-      setAuthLoading(false);
-      
+
       if (error) {
         setErrorMsg(error.message);
       } else if (data?.session || data?.user) {
-        router.push("/");
+        const isAdmin = await verifyAdminStatus(data.session);
+        if (isAdmin) router.push("/");
       }
+    } catch (err: any) {
+      console.error("[Login] OTP verification failed:", err);
+      setErrorMsg(err?.message || "Verification failed. Please check your network connection.");
+    } finally {
+      setAuthLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
     setErrorMsg("");
     setStep('google-loading');
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin,
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+
+      if (error) {
+        setErrorMsg(error.message);
+        setStep('email');
       }
-    });
-    if (error) {
-      setErrorMsg(error.message);
+    } catch (err: any) {
+      console.error("[Login] Google OAuth failed:", err);
+      setErrorMsg(err?.message || "Google sign-in initialization failed. Please try again.");
       setStep('email');
     }
   };

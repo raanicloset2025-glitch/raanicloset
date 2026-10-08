@@ -155,6 +155,31 @@ Do NOT alter any user-facing UI, layouts, framer-motion animations, CSS styling,
 ## 2026-10-08T08:35:20Z
 
 The user has provided an additional critical instruction: "Tell the team to specifically focus heavily on ensuring the login system, photo upload, and video upload logic are absolutely perfect." Please prioritize these specific flows during your cleanup and bug-hunting operation.
+## 2026-10-08T12:54:13Z
 
+# Teamwork Project Prompt
 
+> Requested team: Small focused team (Audit & Improve)
+
+The goal is to perform a deep audit and improvement of THREE specific areas in the `modest-hypatia` Next.js project: Login Auth, Photo/Crop upload, and Server Communication (API/Supabase).
+
+Working directory: C:/Users/satya/Documents/antigravity/modest-hypatia
+
+## Requirements
+
+### R1. Focused Audit & Report
+Review exclusively the following:
+- **Login**: Supabase OAuth and OTP integration (both admin and frontend).
+- **Photo/Crop**: `react-image-crop` and Supabase storage upload logic.
+- **Server Communication**: API routes or network requests pointing to Supabase/backend.
+Provide a short report on what is wrong, fragile, or missing.
+
+### R2. Improve and Fix
+Implement robust fixes for any issues found in these three areas making sure they are 100% bug-free, error-handled, and production-ready.
+
+## Acceptance Criteria
+
+### Testing
+- [ ] Audit report is generated in a simple `audit_report.md` file.
+- [ ] The Auth, Crop, and API files are updated with error handling and proper URL/promise management.
 

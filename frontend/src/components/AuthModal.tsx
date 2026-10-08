@@ -17,15 +17,13 @@ export default function AuthModal() {
   const [authLoading, setAuthLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
 
-  // Cooldown timer
+  // Cooldown timer using setTimeout to avoid interval leaks
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (resendCooldown > 0) {
-      timer = setInterval(() => {
-        setResendCooldown((prev) => prev - 1);
-      }, 1000);
-    }
-    return () => clearInterval(timer);
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => {
+      setResendCooldown((prev) => prev - 1);
+    }, 1000);
+    return () => clearTimeout(timer);
   }, [resendCooldown]);
 
   useEffect(() => {
@@ -36,53 +34,88 @@ export default function AuthModal() {
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && resendCooldown === 0 && !authLoading) {
-      setErrorMsg("");
-      setAuthLoading(true);
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || resendCooldown > 0 || authLoading) return;
+
+    setErrorMsg("");
+    setAuthLoading(true);
+
+    try {
       const { error } = await supabase.auth.signInWithOtp({
-        email: email,
+        email: cleanEmail,
+        options: {
+          emailRedirectTo: window.location.origin,
+        },
       });
-      setAuthLoading(false);
+
       if (error) {
         setErrorMsg(error.message);
       } else {
         setResendCooldown(60);
         setStep('otp');
       }
+    } catch (err: any) {
+      console.error("[AuthModal] OTP request failed:", err);
+      setErrorMsg(err?.message || "Failed to send verification code. Please check your network.");
+    } finally {
+      setAuthLoading(false);
     }
   };
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (otp.length >= 6) {
-      setErrorMsg("");
-      setAuthLoading(true);
+    const cleanOtp = otp.trim();
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (cleanOtp.length < 6 || authLoading) {
+      if (cleanOtp.length < 6) setErrorMsg("Please enter the complete 6-digit code.");
+      return;
+    }
+
+    setErrorMsg("");
+    setAuthLoading(true);
+
+    try {
       const { data, error } = await supabase.auth.verifyOtp({
-        email,
-        token: otp,
-        type: 'email'
+        email: cleanEmail,
+        token: cleanOtp,
+        type: 'email',
       });
-      setAuthLoading(false);
-      
+
       if (error) {
         setErrorMsg(error.message);
-      } else if (data.user) {
+      } else if (data?.user) {
         setAuthModalOpen(false);
+        setOtp("");
+        setStep('email');
       }
+    } catch (err: any) {
+      console.error("[AuthModal] Verification failed:", err);
+      setErrorMsg(err?.message || "Verification failed. Please try again.");
+    } finally {
+      setAuthLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
     setErrorMsg("");
     setStep('google-loading');
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin,
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+
+      if (error) {
+        setErrorMsg(error.message);
+        setStep('email');
       }
-    });
-    if (error) {
-      setErrorMsg(error.message);
+    } catch (err: any) {
+      console.error("[AuthModal] Google OAuth failed:", err);
+      setErrorMsg(err?.message || "Google sign-in initialization failed. Please try again.");
       setStep('email');
     }
   };

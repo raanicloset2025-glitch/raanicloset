@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
+let inFlightFetchPromise: Promise<void> | null = null;
+
 // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ 1. Supporting Domain Models ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
 
 export interface ProductCraftSpec {
@@ -1013,13 +1015,35 @@ export const useAdminStore = create<AdminState>()(
         set((state) => ({
           products: state.products.map((p) => (p.id === id ? { ...p, ...updates } : p)),
         }));
-        // Real-world: Need a PUT endpoint in Rust
+        try {
+          const rawUrl = process.env.NEXT_PUBLIC_API_URL;
+          if (rawUrl && typeof window !== 'undefined') {
+            const apiUrl = rawUrl.replace(/\/+$/, '');
+            await fetch(`${apiUrl}/api/products/${id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(updates),
+            });
+          }
+        } catch (e) {
+          console.warn("[Store] Product sync to backend skipped/failed:", e);
+        }
       },
       deleteProduct: async (id) => {
         set((state) => ({
           products: state.products.filter((p) => p.id !== id),
         }));
-        // Real-world: Need a DELETE endpoint in Rust
+        try {
+          const rawUrl = process.env.NEXT_PUBLIC_API_URL;
+          if (rawUrl && typeof window !== 'undefined') {
+            const apiUrl = rawUrl.replace(/\/+$/, '');
+            await fetch(`${apiUrl}/api/products/${id}`, {
+              method: "DELETE",
+            });
+          }
+        } catch (e) {
+          console.warn("[Store] Product deletion from backend skipped/failed:", e);
+        }
       },
       getProductById: (id) => get().products.find((p) => p.id === id),
 
@@ -1310,17 +1334,33 @@ export const useAdminStore = create<AdminState>()(
       },
 
       fetchFromServer: async () => {
-        try {
-          const res = await fetch('/api/store', { cache: 'no-store' });
-          if (res.ok) {
-            const data = await res.json();
-            if (data && !data.error) {
-              set({ ...data, hasUnsavedChanges: false });
-            }
-          }
-        } catch (e) {
-          console.error("Failed to fetch server state", e);
+        if (inFlightFetchPromise) {
+          return inFlightFetchPromise;
         }
+
+        inFlightFetchPromise = (async () => {
+          try {
+            const res = await fetch('/api/store', {
+              cache: 'no-store',
+              headers: { 'Accept': 'application/json' },
+            });
+            if (res.ok) {
+              const contentType = res.headers.get('content-type') || '';
+              if (contentType.includes('application/json')) {
+                const data = await res.json();
+                if (data && typeof data === 'object' && !data.error && Object.keys(data).length > 0) {
+                  set({ ...data, hasUnsavedChanges: false });
+                }
+              }
+            }
+          } catch (e) {
+            console.error("Failed to fetch server state:", e);
+          } finally {
+            inFlightFetchPromise = null;
+          }
+        })();
+
+        return inFlightFetchPromise;
       },
     }),
     {

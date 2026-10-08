@@ -26,6 +26,8 @@ interface AppState {
   
   // Auth
   user: User | null;
+  isAuthLoading: boolean;
+  authInitialized: boolean;
   isAuthModalOpen: boolean;
   
   // Search
@@ -46,7 +48,7 @@ interface AppState {
   // Auth Actions
   initAuth: () => void;
   login: (email: string, name?: string, avatar_url?: string) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   setAuthModalOpen: (val: boolean) => void;
   
   // Search Actions
@@ -69,6 +71,8 @@ export const useStore = create<AppState>()(persist((set) => ({
   isTransitioning: false,
   
   user: null,
+  isAuthLoading: true,
+  authInitialized: false,
   isAuthModalOpen: false,
   
   isSearchModalOpen: false,
@@ -84,21 +88,30 @@ export const useStore = create<AppState>()(persist((set) => ({
   setActiveJewelryCategory: (val: string) => set({ activeJewelryCategory: val }),
   
   initAuth: () => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        const metadata = session.user.user_metadata;
-        set({ 
-          user: { 
-            email: session.user.email!, 
-            name: metadata?.name || metadata?.full_name || session.user.email?.split('@')[0] || 'User',
-            avatar_url: metadata?.avatar_url || metadata?.picture
-          },
-          isAuthModalOpen: false
-        });
-      } else {
-        set({ user: null });
-      }
-    });
+    set({ isAuthLoading: true });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        if (session?.user) {
+          const metadata = session.user.user_metadata;
+          set({ 
+            user: { 
+              email: session.user.email!, 
+              name: metadata?.name || metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+              avatar_url: metadata?.avatar_url || metadata?.picture
+            },
+            isAuthLoading: false,
+            authInitialized: true,
+            isAuthModalOpen: false
+          });
+        } else {
+          set({ user: null, isAuthLoading: false, authInitialized: true });
+        }
+      })
+      .catch((err) => {
+        console.error("[Store] Session load error:", err);
+        set({ user: null, isAuthLoading: false, authInitialized: true });
+      });
 
     supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
@@ -109,18 +122,25 @@ export const useStore = create<AppState>()(persist((set) => ({
             name: metadata?.name || metadata?.full_name || session.user.email?.split('@')[0] || 'User',
             avatar_url: metadata?.avatar_url || metadata?.picture
           },
+          isAuthLoading: false,
+          authInitialized: true,
           isAuthModalOpen: false
         });
       } else {
-        set({ user: null });
+        set({ user: null, isAuthLoading: false, authInitialized: true });
       }
     });
   },
   
   login: (email, name = 'Guest', avatar_url) => set({ user: { email, name, avatar_url }, isAuthModalOpen: false }),
-  logout: () => {
-    supabase.auth.signOut();
-    set({ user: null });
+  logout: async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error("[Store] Logout error:", err);
+    } finally {
+      set({ user: null });
+    }
   },
   setAuthModalOpen: (val: boolean) => set({ isAuthModalOpen: val }),
   

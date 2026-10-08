@@ -11,6 +11,7 @@ Coordinate and monitor the massive general cleanup and logic hardening across Ra
 - Active working directory: c:\Users\satya\Documents\antigravity\modest-hypatia\.agents\sentinel
 - Active Orchestrator: 44ab93d7-d8b8-4293-92d7-c5de155d5331
 - Active Orchestrator (Cleanup & Logic Hardening): 6770afae-23b5-416a-b914-ce3bb5470dd3
+- Active Orchestrator (Audit & Improve 3 Areas): 31e44df8-578e-48f6-951e-8f5f36124266
 
 ## 🔒 Key Constraints
 - No technical decisions — relay only
@@ -22,20 +23,22 @@ Coordinate and monitor the massive general cleanup and logic hardening across Ra
 - Strict UI Preservation: Do NOT alter any user-facing UI, layouts, framer-motion animations, CSS styling, or colors
 - Critical user priority: Login system, photo upload, and video upload logic must be hardened and verified functional
 - Acceptance criteria: npx tsc --noEmit (0 errors) and Next.js production build pass in both admin and frontend
+- Focus exclusively on THREE areas: Login Auth, Photo/Crop upload, Server Communication (API/Supabase)
+- Deliverable includes audit_report.md at project root
 
 ## User Context
-- **Last user request**: Massive general cleanup of Raani Closet Next.js app (admin/src and frontend/src) for hidden bugs, logic errors, race conditions, hydration mismatches, dead code; user priority focus on login, photo upload, and video upload logic. Strict UI preservation.
+- **Last user request**: Deep audit and improvement of THREE specific areas: Login Auth, Photo/Crop upload, and Server Communication (API/Supabase). Generate audit_report.md, fix all issues, ensure 100% bug-free and production-ready.
 - **Pending clarifications**: none
-- **Delivered results**: Dispatch completed, monitoring crons scheduled, orchestrator active.
+- **Delivered results**: Dispatched to orchestrator_6 (31e44df8-578e-48f6-951e-8f5f36124266), monitoring crons scheduled (task-28, task-30).
 
 ## Project Status
-- **Phase**: in progress (Milestone 1 Reconnaissance & Critical Flow Analysis)
+- **Phase**: in progress (Audit & Improve 3 Areas)
 - **Route**: General -> teamwork_preview_orchestrator
-- **Routing Rationale**: Full-application bug hunt, logic hardening, and Next.js builds across multiple workspaces.
-- **Active Orchestrator ID**: 6770afae-23b5-416a-b914-ce3bb5470dd3
-- **Working Directory**: c:\Users\satya\Documents\antigravity\modest-hypatia\.agents\orchestrator_5
-- **Cron 1 (Progress Reporting, */8)**: task-35
-- **Cron 2 (Liveness Check, */10)**: task-37
+- **Routing Rationale**: Multi-part deep audit and improvement across admin & frontend subsystems.
+- **Active Orchestrator ID**: 31e44df8-578e-48f6-951e-8f5f36124266
+- **Working Directory**: c:\Users\satya\Documents\antigravity\modest-hypatia\.agents\orchestrator_6
+- **Cron 1 (Progress Reporting, */8)**: task-28
+- **Cron 2 (Liveness Check, */10)**: task-30
 
 ## Victory Audit Status
 - **Triggered**: no
@@ -44,5 +47,6 @@ Coordinate and monitor the massive general cleanup and logic hardening across Ra
 
 ## Artifact Index
 - c:\Users\satya\Documents\antigravity\modest-hypatia\.agents\ORIGINAL_REQUEST.md — Authoritative user requests
-- c:\Users\satya\Documents\antigravity\modest-hypatia\.agents\orchestrator_5\DISPATCH.md — Orchestrator 5 dispatch parameters
-- c:\Users\satya\Documents\antigravity\modest-hypatia\.agents\orchestrator_5\progress.md — Active orchestrator progress tracking
+- c:\Users\satya\Documents\antigravity\modest-hypatia\.agents\orchestrator_6\DISPATCH.md — Orchestrator 6 dispatch parameters
+- c:\Users\satya\Documents\antigravity\modest-hypatia\.agents\orchestrator_6\progress.md — Active orchestrator progress tracking
+- c:\Users\satya\Documents\antigravity\modest-hypatia\audit_report.md — Target audit report deliverable

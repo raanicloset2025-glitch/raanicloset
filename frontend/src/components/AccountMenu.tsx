@@ -65,13 +65,12 @@ export default function AccountMenu({ isMobile = false, isJewelry = false }: Acc
   const handleLogoutClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      const { supabase } = await import('@/lib/supabaseClient');
-      await supabase.auth.signOut();
+      await logout();
     } catch (err) {
-      console.error(err);
+      console.error("[AccountMenu] Logout error:", err);
+    } finally {
+      setIsOpen(false);
     }
-    logout();
-    setIsOpen(false);
   };
 
   return (

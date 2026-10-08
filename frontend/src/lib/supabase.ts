@@ -1,20 +1,23 @@
-import { createClient } from '@supabase/supabase-js';
+import { supabase, isSupabaseConfigured } from './supabaseClient';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export { supabase, isSupabaseConfigured };
 
 export async function uploadMediaToSupabase(
   file: Blob | File,
   bucket: string,
-  path: string
+  path: string,
+  contentType?: string
 ): Promise<string> {
+  const options: { upsert: boolean; contentType?: string } = { upsert: true };
+  if (contentType) {
+    options.contentType = contentType;
+  } else if (file instanceof File && file.type) {
+    options.contentType = file.type;
+  }
+
   const { data, error } = await supabase.storage
     .from(bucket)
-    .upload(path, file, {
-      upsert: true,
-    });
+    .upload(path, file, options);
 
   if (error) {
     throw error;
@@ -24,5 +27,5 @@ export async function uploadMediaToSupabase(
     .from(bucket)
     .getPublicUrl(data.path);
 
-  return publicUrlData.publicUrl;
+  return publicUrlData.publicUrl.replace(/\s/g, '%20');
 }

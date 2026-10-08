@@ -15,8 +15,20 @@ import { useAdminStore } from "@/store/useAdminStore";
 import { Eye, Check, Menu, X, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import { supabase } from "@/lib/supabaseClient";
 
 const InstallAppButton = dynamic(() => import("@/components/InstallAppButton"), { ssr: false });
+
+const ALLOWED_ADMINS = (
+  process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'raanicloset2025@gmail.com'
+)
+  .split(',')
+  .map((e) => e.trim().toLowerCase());
+
+function isAllowedAdmin(email?: string | null): boolean {
+  if (!email) return false;
+  return ALLOWED_ADMINS.includes(email.trim().toLowerCase());
+}
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("categories");
@@ -26,29 +38,24 @@ export default function AdminDashboard() {
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const router = useRouter();
 
-  // Protect route client-side
+  // Protect route client-side with robust PKCE & OAuth support
   React.useEffect(() => {
-    import("@/lib/supabaseClient").then(({ supabase }) => {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        // If coming from Google OAuth, wait for onAuthStateChange to parse the URL
-        if (typeof window !== 'undefined' && window.location.hash.includes('access_token')) {
-          return;
-        }
+    let isMounted = true;
 
-        const email = session?.user?.email?.toLowerCase();
-        if (!session || !email || email !== 'raanicloset2025@gmail.com') {
-          console.error("KICKED OUT 1: session=", !!session, "email=", email);
-          supabase.auth.signOut();
-          router.push("/login");
-        } else {
-          setIsAuthChecking(false);
-        }
-      });
+    // 1. Check URL parameters for OAuth errors
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const authError = params.get('error_description') || params.get('error');
+      if (authError) {
+        router.push(`/login?error=${encodeURIComponent(authError)}`);
+        return;
+      }
+    }
 
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-        if (!session && typeof window !== 'undefined' && window.location.hash.includes('access_token')) {
-          return;
-        }
+    // 2. Set up auth state change listener (PKCE code exchange fires SIGNED_IN)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!isMounted) return;
 
         if (event === 'SIGNED_OUT') {
           router.push("/login");
@@ -56,18 +63,56 @@ export default function AdminDashboard() {
         }
 
         if (session) {
-          const email = session?.user?.email?.toLowerCase().trim();
-          if (email !== 'raanicloset2025@gmail.com') {
-            supabase.auth.signOut();
-            router.push("/login");
+          const email = session.user?.email;
+          if (!isAllowedAdmin(email)) {
+            await supabase.auth.signOut();
+            router.push("/login?error=unauthorized");
+          } else {
+            setIsAuthChecking(false);
+            // Clean up OAuth query parameters from URL
+            if (typeof window !== 'undefined' && window.location.search.includes('code=')) {
+              window.history.replaceState({}, document.title, window.location.pathname);
+            }
+          }
+        }
+      }
+    );
+
+    // 3. Inspect existing session
+    supabase.auth
+      .getSession()
+      .then(async ({ data: { session } }) => {
+        if (!isMounted) return;
+
+        // If URL contains an auth code or hash, wait for onAuthStateChange to exchange it
+        if (
+          typeof window !== 'undefined' &&
+          (window.location.search.includes('code=') || window.location.hash.includes('access_token'))
+        ) {
+          return;
+        }
+
+        if (session) {
+          const email = session.user?.email;
+          if (!isAllowedAdmin(email)) {
+            await supabase.auth.signOut();
+            router.push("/login?error=unauthorized");
           } else {
             setIsAuthChecking(false);
           }
+        } else {
+          router.push("/login");
         }
+      })
+      .catch((err) => {
+        console.error("[Admin] Session check failed:", err);
+        if (isMounted) router.push("/login");
       });
 
-      return () => subscription.unsubscribe();
-    });
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, [router]);
 
   // Store access
@@ -132,13 +177,11 @@ export default function AdminDashboard() {
 
   const handleLogout = async () => {
     try {
-      import("@/lib/supabaseClient").then(({ supabase }) => {
-        supabase.auth.signOut().then(() => {
-          router.push("/login");
-        });
-      });
+      await supabase.auth.signOut();
     } catch (e) {
-      console.error(e);
+      console.error("[Admin] Logout error:", e);
+    } finally {
+      router.push("/login");
     }
   };
 

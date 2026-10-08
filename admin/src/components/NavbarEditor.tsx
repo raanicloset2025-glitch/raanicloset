@@ -24,18 +24,24 @@ export default function NavbarEditor() {
 
   if (!mounted || !store.setBrandName) return null;
   
+  const [uploadingLogoType, setUploadingLogoType] = React.useState<'clothing' | 'jewelry' | 'tab' | null>(null);
+
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'clothing' | 'jewelry' | 'tab') => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (file) {
+      setUploadingLogoType(type);
       try {
         const url = await uploadImage(file);
         
         if (type === 'clothing') store.setClothingLogoUrl(url);
         else if (type === 'jewelry') store.setJewelryLogoUrl(url);
         else if (type === 'tab') store.setTabLogoUrl(url);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Logo upload failed:", error);
-        alert("Logo upload failed. Please try again.");
+        alert(error?.message || "Logo upload failed. Please try again.");
+      } finally {
+        setUploadingLogoType(null);
       }
     }
   };

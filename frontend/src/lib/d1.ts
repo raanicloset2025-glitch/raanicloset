@@ -1,18 +1,39 @@
+import fs from "fs";
+import path from "path";
 
+// Locate store_db.json across varying working directories
+function findDbFile(): string {
+  const candidates = [
+    path.join(process.cwd(), "store_db.json"),
+    path.join(process.cwd(), "frontend", "store_db.json"),
+    path.join(process.cwd(), "..", "frontend", "store_db.json"),
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
+  }
+  return candidates[0];
+}
 
-
-// For local fallback if D1 is not configured
-
-
-function getLocalState() {
-  if (false) {
-    return {}
+function getLocalState(): Record<string, any> {
+  try {
+    const dbFile = findDbFile();
+    if (fs.existsSync(dbFile)) {
+      const raw = fs.readFileSync(dbFile, "utf-8");
+      return JSON.parse(raw);
+    }
+  } catch (err) {
+    console.warn("[Frontend D1] Failed to read store_db.json fallback:", err);
   }
   return {};
 }
 
-function saveLocalState(state: any) {
-  
+function saveLocalState(state: any): void {
+  try {
+    const dbFile = findDbFile();
+    fs.writeFileSync(dbFile, JSON.stringify(state, null, 2), "utf-8");
+  } catch (err) {
+    console.error("[Frontend D1] Failed to write store_db.json fallback:", err);
+  }
 }
 
 // D1 Config
@@ -20,75 +41,81 @@ const D1_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
 const D1_DATABASE_ID = process.env.CLOUDFLARE_DATABASE_ID;
 const D1_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
 
-const isD1Configured = D1_ACCOUNT_ID && D1_DATABASE_ID && D1_API_TOKEN;
+const isD1Configured = Boolean(D1_ACCOUNT_ID && D1_DATABASE_ID && D1_API_TOKEN);
 
-async function queryD1(sql: string, params: any[] = []) {
+async function queryD1(sql: string, params: any[] = []): Promise<any[]> {
   if (!isD1Configured) throw new Error("D1 is not configured");
 
-  const res = await fetch(
-    `https://api.cloudflare.com/client/v4/accounts/${D1_ACCOUNT_ID}/d1/database/${D1_DATABASE_ID}/query`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${D1_API_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ sql, params }),
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+  try {
+    const res = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${D1_ACCOUNT_ID}/d1/database/${D1_DATABASE_ID}/query`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${D1_API_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sql, params }),
+        signal: controller.signal,
+      }
+    );
+
+    if (!res.ok) {
+      const errorText = await res.text().catch(() => "");
+      console.error("[Frontend D1] HTTP Error:", res.status, errorText);
+      throw new Error(`D1 HTTP Error ${res.status}: ${errorText}`);
     }
-  );
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error("D1 Query Error:", errorText);
-    throw new Error(`D1 HTTP Error: ${res.status}`);
+    const data = await res.json();
+    if (!data.success) {
+      throw new Error("D1 Query Failed: " + JSON.stringify(data.errors));
+    }
+
+    return data?.result?.[0]?.results ?? [];
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  const data = await res.json();
-  if (!data.success) {
-    throw new Error("D1 Query Failed: " + JSON.stringify(data.errors));
-  }
-
-  return data.result[0].results; // D1 returns an array of result sets
 }
 
-export async function getStoreState() {
+export async function getStoreState(): Promise<Record<string, any>> {
   if (!isD1Configured) {
-    console.log("Using Local store_db.json fallback");
     return getLocalState();
   }
 
   try {
     const results = await queryD1("SELECT data FROM store_state WHERE id = 'production'");
-    if (results && results.length > 0) {
+    if (results && results.length > 0 && results[0]?.data) {
       return JSON.parse(results[0].data);
     } else {
-      // Initialize if empty
+      // Initialize if table exists but row is missing
       await queryD1("INSERT INTO store_state (id, data) VALUES ('production', '{}')");
       return {};
     }
   } catch (error) {
-    console.error("D1 Fetch Error, falling back to local:", error);
+    console.error("[Frontend D1] Fetch error, falling back to local store_db.json:", error);
     return getLocalState();
   }
 }
 
-export async function saveStoreState(state: any) {
+export async function saveStoreState(state: any): Promise<void> {
   if (!isD1Configured) {
-    console.log("Saving to Local store_db.json fallback");
     return saveLocalState(state);
   }
 
   try {
     const jsonStr = JSON.stringify(state);
     
-    // UPSERT logic for SQLite
-    await queryD1(`
-      INSERT INTO store_state (id, data) VALUES ('production', ?)
-      ON CONFLICT(id) DO UPDATE SET data = excluded.data
-    `, [jsonStr]);
-    
+    // UPSERT logic for SQLite / Cloudflare D1
+    await queryD1(
+      `INSERT INTO store_state (id, data) VALUES ('production', ?)
+       ON CONFLICT(id) DO UPDATE SET data = excluded.data`,
+      [jsonStr]
+    );
   } catch (error) {
-    console.error("D1 Save Error, saving to local instead:", error);
+    console.error("[Frontend D1] Save error, saving to local fallback instead:", error);
     saveLocalState(state);
   }
 }
