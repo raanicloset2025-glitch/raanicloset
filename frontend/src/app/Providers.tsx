@@ -3,9 +3,12 @@
 import React from "react";
 import { useAdminStore } from "@/store/useAdminStore";
 
+import { useStore } from "@/store/useStore";
+
 function AppInitializer() {
   React.useEffect(() => {
     useAdminStore.getState().fetchFromServer();
+    useStore.getState().initAuth();
   }, []);
   return null;
 }

@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { supabase } from '@/lib/supabaseClient';
 
 export interface CartItem {
   id: string;
@@ -12,6 +14,7 @@ export interface CartItem {
 export interface User {
   email: string;
   name: string;
+  avatar_url?: string;
 }
 
 interface AppState {
@@ -41,7 +44,8 @@ interface AppState {
   setActiveJewelryCategory: (val: string) => void;
   
   // Auth Actions
-  login: (email: string, name?: string) => void;
+  initAuth: () => void;
+  login: (email: string, name?: string, avatar_url?: string) => void;
   logout: () => void;
   setAuthModalOpen: (val: boolean) => void;
   
@@ -58,7 +62,7 @@ interface AppState {
   toggleWishlist: (item: Omit<CartItem, 'quantity'>) => void;
 }
 
-export const useStore = create<AppState>((set) => ({
+export const useStore = create<AppState>()(persist((set) => ({
   isJewelry: false,
   activeClothingCategory: 'All',
   activeJewelryCategory: 'All',
@@ -79,8 +83,43 @@ export const useStore = create<AppState>((set) => ({
   setActiveClothingCategory: (val: string) => set({ activeClothingCategory: val }),
   setActiveJewelryCategory: (val: string) => set({ activeJewelryCategory: val }),
   
-  login: (email, name = 'Guest') => set({ user: { email, name }, isAuthModalOpen: false }),
-  logout: () => set({ user: null }),
+  initAuth: () => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const metadata = session.user.user_metadata;
+        set({ 
+          user: { 
+            email: session.user.email!, 
+            name: metadata?.name || metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+            avatar_url: metadata?.avatar_url || metadata?.picture
+          } 
+        });
+      } else {
+        set({ user: null });
+      }
+    });
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        const metadata = session.user.user_metadata;
+        set({ 
+          user: { 
+            email: session.user.email!, 
+            name: metadata?.name || metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+            avatar_url: metadata?.avatar_url || metadata?.picture
+          } 
+        });
+      } else {
+        set({ user: null });
+      }
+    });
+  },
+  
+  login: (email, name = 'Guest', avatar_url) => set({ user: { email, name, avatar_url }, isAuthModalOpen: false }),
+  logout: () => {
+    supabase.auth.signOut();
+    set({ user: null });
+  },
   setAuthModalOpen: (val: boolean) => set({ isAuthModalOpen: val }),
   
   setSearchModalOpen: (val: boolean) => set({ isSearchModalOpen: val }),
@@ -105,4 +144,4 @@ export const useStore = create<AppState>((set) => ({
     }
     return { wishlistItems: [...state.wishlistItems, { ...item, quantity: 1 }] };
   }),
-}));
+}), { name: 'raani-frontend-storage' }));

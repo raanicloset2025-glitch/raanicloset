@@ -30,7 +30,7 @@
     "react-player": "^3.4.0",
     "three": "^0.186.1",
     "uuid": "^14.0.2",
-    "wasm-logo": "file:../wasm-logo/pkg",
+    
     "zustand": "^5.0.15"
   },
   "devDependencies": {

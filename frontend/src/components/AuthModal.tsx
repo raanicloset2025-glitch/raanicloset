@@ -8,7 +8,6 @@ export default function AuthModal() {
   const isAuthModalOpen = useStore((state) => state.isAuthModalOpen);
   const setAuthModalOpen = useStore((state) => state.setAuthModalOpen);
   const isJewelry = useStore((state) => state.isJewelry);
-  const login = useStore((state) => state.login);
   
   const [step, setStep] = useState<'email' | 'otp' | 'google-loading'>('email');
   const [email, setEmail] = useState('');
@@ -47,7 +46,6 @@ export default function AuthModal() {
       if (error) {
         alert("Invalid OTP: " + error.message);
       } else if (data.user) {
-        login(data.user.email!, data.user.email?.split('@')[0] || "User");
         setAuthModalOpen(false);
       }
     }

@@ -98,13 +98,22 @@ export default function AccountMenu({ isMobile = false, isJewelry = false }: Acc
             isOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'
           }`}
         >
-          <div className="p-3 mb-2 border-b border-inherit">
-            <span className={`block font-sans text-sm ${isJewelry ? 'text-slate-200' : 'text-[#1A1A1A]'}`}>
-              {user.email}
-            </span>
-            <span className={`block font-royal text-[9px] tracking-widest uppercase mt-1 text-[#CBA153]`}>
-              {user.name}
-            </span>
+          <div className="p-3 mb-2 border-b border-inherit flex items-center gap-3">
+            {user.avatar_url ? (
+              <img src={user.avatar_url} alt={user.name} className="w-8 h-8 rounded-full object-cover" />
+            ) : (
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isJewelry ? 'bg-slate-800' : 'bg-[#E0A29C]/20'}`}>
+                <User className={`w-4 h-4 ${isJewelry ? 'text-slate-400' : 'text-[#3B2F2F]'}`} />
+              </div>
+            )}
+            <div>
+              <span className={`block font-sans text-sm ${isJewelry ? 'text-slate-200' : 'text-[#1A1A1A]'}`}>
+                {user.email}
+              </span>
+              <span className={`block font-royal text-[9px] tracking-widest uppercase mt-1 text-[#CBA153]`}>
+                {user.name}
+              </span>
+            </div>
           </div>
           <div className="flex flex-col gap-1">
             <button
@@ -135,13 +144,22 @@ export default function AccountMenu({ isMobile = false, isJewelry = false }: Acc
             }`}
           >
             <div className={`flex items-center justify-between p-6 border-b ${borderClass}`}>
-              <div>
-                <span className={`block font-sans text-lg ${isJewelry ? 'text-slate-200' : 'text-[#1A1A1A]'}`}>
-                  {user.email}
-                </span>
-                <span className={`block font-royal text-[10px] tracking-widest uppercase mt-1 text-[#CBA153]`}>
-                  {user.name}
-                </span>
+              <div className="flex items-center gap-3">
+                {user.avatar_url ? (
+                  <img src={user.avatar_url} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
+                ) : (
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isJewelry ? 'bg-slate-800' : 'bg-[#E0A29C]/20'}`}>
+                    <User className={`w-5 h-5 ${isJewelry ? 'text-slate-400' : 'text-[#3B2F2F]'}`} />
+                  </div>
+                )}
+                <div>
+                  <span className={`block font-sans text-lg ${isJewelry ? 'text-slate-200' : 'text-[#1A1A1A]'}`}>
+                    {user.email}
+                  </span>
+                  <span className={`block font-royal text-[10px] tracking-widest uppercase mt-1 text-[#CBA153]`}>
+                    {user.name}
+                  </span>
+                </div>
               </div>
               <button onClick={() => setIsOpen(false)} className={`p-2 rounded-full ${hoverBg} ${isJewelry ? 'text-slate-400' : 'text-[#1A1A1A]/50'}`}>
                 <X className="w-5 h-5" />
