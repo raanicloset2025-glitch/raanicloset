@@ -8,7 +8,7 @@ import dynamic from 'next/dynamic';
 
 const InstallAppButton = dynamic(() => import("@/components/InstallAppButton"), { ssr: false });
 
-const ALLOWED_EMAILS = ['raanicloset2025@gmail.com', 'brajendrakumar10156@gmail.com'];
+const ALLOWED_EMAILS = ['raanicloset2025@gmail.com'];
 
 export default function LoginPage() {
   const router = useRouter();
