@@ -14,6 +14,19 @@ export default function AuthModal() {
   const [otp, setOtp] = useState('');
   const [isClient, setIsClient] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  // Cooldown timer
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (resendCooldown > 0) {
+      timer = setInterval(() => {
+        setResendCooldown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   useEffect(() => {
     setIsClient(true);
@@ -23,14 +36,17 @@ export default function AuthModal() {
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
+    if (email && resendCooldown === 0 && !authLoading) {
       setErrorMsg("");
+      setAuthLoading(true);
       const { error } = await supabase.auth.signInWithOtp({
         email: email,
       });
+      setAuthLoading(false);
       if (error) {
         setErrorMsg(error.message);
       } else {
+        setResendCooldown(60);
         setStep('otp');
       }
     }
@@ -40,11 +56,13 @@ export default function AuthModal() {
     e.preventDefault();
     if (otp.length >= 6) {
       setErrorMsg("");
+      setAuthLoading(true);
       const { data, error } = await supabase.auth.verifyOtp({
         email,
         token: otp,
         type: 'email'
       });
+      setAuthLoading(false);
       
       if (error) {
         setErrorMsg(error.message);
@@ -138,13 +156,18 @@ export default function AuthModal() {
 
               <button 
                 type="submit"
-                className={`w-full h-12 flex items-center justify-center font-sans text-[10px] uppercase tracking-[0.2em] font-semibold transition-all duration-300 ${
+                disabled={authLoading}
+                className={`w-full h-12 flex items-center justify-center font-sans text-[10px] uppercase tracking-[0.2em] font-semibold transition-all duration-300 disabled:opacity-50 ${
                   isJewelry 
                     ? 'bg-slate-800 hover:bg-slate-700 text-[#CBA153]' 
                     : 'bg-[#1A1A1A] hover:bg-[#2A2A2A] text-[#FDFBF7]'
                 }`}
               >
-                Verify & Enter
+                {authLoading ? (
+                  <div className={`w-4 h-4 rounded-full border-2 border-t-transparent animate-spin ${isJewelry ? 'border-[#CBA153]' : 'border-[#FDFBF7]'}`}></div>
+                ) : (
+                  "Verify & Enter"
+                )}
               </button>
             </form>
             
@@ -152,11 +175,12 @@ export default function AuthModal() {
               <button 
                 type="button"
                 onClick={handleEmailSubmit}
-                className={`w-full text-center font-sans text-[10px] uppercase tracking-[0.2em] transition-colors ${
+                disabled={authLoading || resendCooldown > 0}
+                className={`w-full text-center font-sans text-[10px] uppercase tracking-[0.2em] transition-colors disabled:opacity-50 ${
                   isJewelry ? 'text-slate-400 hover:text-white' : 'text-[#603D3D] hover:text-black'
                 }`}
               >
-                Resend OTP
+                {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend OTP"}
               </button>
               <button 
                 type="button"
@@ -196,13 +220,18 @@ export default function AuthModal() {
 
               <button 
                 type="submit"
-                className={`w-full h-12 flex items-center justify-center font-sans text-[10px] uppercase tracking-[0.2em] font-semibold transition-all duration-300 ${
+                disabled={authLoading}
+                className={`w-full h-12 flex items-center justify-center font-sans text-[10px] uppercase tracking-[0.2em] font-semibold transition-all duration-300 disabled:opacity-50 ${
                   isJewelry 
                     ? 'bg-slate-800 hover:bg-slate-700 text-[#CBA153]' 
                     : 'bg-[#1A1A1A] hover:bg-[#2A2A2A] text-[#FDFBF7]'
                 }`}
               >
-                Continue with Email
+                {authLoading ? (
+                  <div className={`w-4 h-4 rounded-full border-2 border-t-transparent animate-spin ${isJewelry ? 'border-[#CBA153]' : 'border-[#FDFBF7]'}`}></div>
+                ) : (
+                  "Continue with Email"
+                )}
               </button>
             </form>
 
