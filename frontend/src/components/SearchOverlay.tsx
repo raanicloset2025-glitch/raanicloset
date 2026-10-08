@@ -27,6 +27,9 @@ function recordSearch(term: string, isJewelry: boolean) {
 // ── Component ─────────────────────────────────────────────────────
 export default function SearchOverlay() {
   const { isSearchModalOpen, setSearchModalOpen, isJewelry } = useStore();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const { products, trendingSearchesClothing, trendingSearchesJewelry, searchSynonyms, getSignatureProducts, searchCollectionsClothing, searchCollectionsJewelry, searchSignatureClothing, searchSignatureJewelry, clothingCategories, jewelryCategories } = useAdminStore();
   const [query, setQuery]       = useState("");
   const [trending, setTrending] = useState<string[]>([]);
@@ -155,6 +158,8 @@ export default function SearchOverlay() {
     if (!ids || ids.length === 0) return (getSignatureProducts ? getSignatureProducts() : (products || []).slice(0, 4));
     return ids.map(id => products?.find(p => p.id === id || p.title === id)).filter(Boolean).slice(0, 4);
   };
+
+  if (!mounted) return null;
 
   return (
     <div className={`fixed inset-0 z-[100] transform-gpu transition-all duration-[700ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${

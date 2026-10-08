@@ -92,7 +92,7 @@ export default function AccountMenu({ isMobile = false, isJewelry = false }: Acc
       </button>
 
       {/* DESKTOP DROPDOWN */}
-      {!isMobile && user && (
+      {mounted && !isMobile && user && (
         <div 
           className={`absolute right-0 top-full mt-4 w-56 rounded-2xl border ${borderClass} ${bgColor} shadow-2xl p-2 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] transform origin-top-right ${
             isOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'

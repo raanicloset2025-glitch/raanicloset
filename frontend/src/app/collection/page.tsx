@@ -1,6 +1,7 @@
 'use client';
 import NavbarWrapper from "@/components/NavbarWrapper";
-import LuxuryFooter from "@/components/LuxuryFooter";
+import dynamic from 'next/dynamic';
+const LuxuryFooter = dynamic(() => import('@/components/LuxuryFooter'));
 import ProductGrid from "@/components/ProductGrid";
 import CollectionHeader from "@/components/CollectionHeader";
 import Link from "next/link";
@@ -11,7 +12,7 @@ export default function CollectionPage() {
   const isJewelry = useStore((state) => state.isJewelry);
 
   return (
-    <main className={`min-h-screen flex flex-col selection:bg-[#E0A29C] selection:text-[#1A0B16] transition-colors duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] ${isJewelry ? 'bg-[#050102]' : 'bg-[#F9F6F0]'} animate-in fade-in duration-1000 fill-mode-both`}>
+    <main suppressHydrationWarning className={`min-h-screen flex flex-col selection:bg-[#E0A29C] selection:text-[#1A0B16] transition-colors duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] ${isJewelry ? 'bg-[#050102]' : 'bg-[#F9F6F0]'} animate-in fade-in duration-1000 fill-mode-both`}>
       {/* Shared Navbar */}
       <NavbarWrapper />
 

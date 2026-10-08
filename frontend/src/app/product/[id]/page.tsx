@@ -9,7 +9,8 @@ import PDPMasthead from "@/components/PDPMasthead";
 import PDPWhatsAppButton from "@/components/PDPWhatsAppButton";
 import PDPAddToCartButton from "@/components/PDPAddToCartButton";
 import CuratedSlider from "@/components/CuratedSlider";
-import LuxuryFooter from "@/components/LuxuryFooter";
+import dynamic from 'next/dynamic';
+const LuxuryFooter = dynamic(() => import('@/components/LuxuryFooter'));
 
 export default function ProductDetail() {
   const params = useParams();

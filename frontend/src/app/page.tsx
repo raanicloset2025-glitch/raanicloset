@@ -3,12 +3,13 @@ import HeroSection from "@/components/HeroSection";
 import CategoryCarousel from "@/components/CategoryCarousel";
 import ProductGrid from "@/components/ProductGrid";
 import BespokeBanner from "@/components/BespokeBanner";
-import RoyalVitrineReviews from "@/components/RoyalVitrineReviews";
-import VideoCarousel from "@/components/VideoCarousel";
-import ClientDiaries from "@/components/ClientDiaries";
-import MaisonDelivery from "@/components/MaisonDelivery";
-import StoryEpilogue from "@/components/StoryEpilogue";
-import LuxuryFooter from "@/components/LuxuryFooter";
+import dynamic from 'next/dynamic';
+const RoyalVitrineReviews = dynamic(() => import('@/components/RoyalVitrineReviews'));
+const VideoCarousel = dynamic(() => import("@/components/VideoCarousel"));
+const ClientDiaries = dynamic(() => import("@/components/ClientDiaries"));
+const MaisonDelivery = dynamic(() => import("@/components/MaisonDelivery"));
+const StoryEpilogue = dynamic(() => import("@/components/StoryEpilogue"));
+const LuxuryFooter = dynamic(() => import("@/components/LuxuryFooter"));
 
 export default function Home() {
   return (

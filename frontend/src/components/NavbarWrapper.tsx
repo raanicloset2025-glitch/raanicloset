@@ -26,12 +26,12 @@ function MobileNavbar() {
   return (
     <>
       <div
-        className={`fixed inset-0 z-[-50] pointer-events-none transition-opacity duration-[1000ms] bg-[#F9F6F0] ${
+        suppressHydrationWarning className={`fixed inset-0 z-[-50] pointer-events-none transition-opacity duration-[1000ms] bg-[#F9F6F0] ${
           !isJewelry ? "opacity-100" : "opacity-0"
         }`}
       />
       <div
-        className={`fixed inset-0 z-[-50] pointer-events-none transition-opacity duration-[1000ms] ${
+        suppressHydrationWarning className={`fixed inset-0 z-[-50] pointer-events-none transition-opacity duration-[1000ms] ${
           isJewelry ? "opacity-100" : "opacity-0"
         }`}
         style={{
