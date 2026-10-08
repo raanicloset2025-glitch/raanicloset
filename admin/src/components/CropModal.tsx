@@ -4,6 +4,7 @@ import React, { useState, useCallback } from "react";
 import Cropper from "react-easy-crop";
 import { motion } from "framer-motion";
 import { Check, X, ZoomIn, RotateCcw, Loader2 } from "lucide-react";
+import { uploadImage } from "@/lib/uploadHelper";
 
 export interface CropModalProps {
   imageSrc: string;
@@ -22,6 +23,7 @@ export default function CropModal({
 }: CropModalProps) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
 
   const onCropChange = (crop: { x: number; y: number }) => {
@@ -52,6 +54,25 @@ export default function CropModal({
         img.onerror = reject;
       });
 
+      const rotRad = (rotation * Math.PI) / 180;
+      const bBoxWidth = Math.abs(Math.cos(rotRad) * img.width) + Math.abs(Math.sin(rotRad) * img.height);
+      const bBoxHeight = Math.abs(Math.sin(rotRad) * img.width) + Math.abs(Math.cos(rotRad) * img.height);
+
+      const bBoxCanvas = document.createElement("canvas");
+      bBoxCanvas.width = bBoxWidth;
+      bBoxCanvas.height = bBoxHeight;
+      const bBoxCtx = bBoxCanvas.getContext("2d");
+
+      if (!bBoxCtx) {
+        setIsCompressing(false);
+        return;
+      }
+
+      bBoxCtx.translate(bBoxWidth / 2, bBoxHeight / 2);
+      bBoxCtx.rotate(rotRad);
+      bBoxCtx.translate(-img.width / 2, -img.height / 2);
+      bBoxCtx.drawImage(img, 0, 0);
+
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
 
@@ -67,7 +88,7 @@ export default function CropModal({
       canvas.height = Math.round(croppedAreaPixels.height * scale);
 
       ctx.drawImage(
-        img,
+        bBoxCanvas,
         croppedAreaPixels.x,
         croppedAreaPixels.y,
         croppedAreaPixels.width,
@@ -78,22 +99,18 @@ export default function CropModal({
         canvas.height
       );
 
-      // Export compressed WebP to local filesystem
+      // Export compressed WebP to Supabase
       canvas.toBlob(async (blob) => {
         if (!blob) {
             setIsCompressing(false);
             return;
         }
         try {
-            const formData = new FormData();
-            formData.append("file", blob, "cropped.webp");
-            const res = await fetch("/api/upload", { method: "POST", body: formData });
-            const data = await res.json();
-            
-            if (!res.ok) throw new Error(data.error || "Upload failed");
+            const file = new File([blob], `cropped-${Date.now()}.webp`, { type: 'image/webp' });
+            const url = await uploadImage(file);
             
             if (imageSrc.startsWith("blob:")) URL.revokeObjectURL(imageSrc);
-            onCropComplete(data.url);
+            onCropComplete(url);
             onClose();
         } catch (uploadErr) {
             console.error("Upload failed", uploadErr);
@@ -138,29 +155,47 @@ export default function CropModal({
             image={imageSrc}
             crop={crop}
             zoom={zoom}
+            rotation={rotation}
             aspect={aspect}
             onCropChange={onCropChange}
             onZoomChange={onZoomChange}
+            onRotationChange={setRotation}
             onCropComplete={handleCropComplete}
           />
         </div>
 
         {/* Controls & Actions */}
         <div className="p-5 bg-[#1A1A1A] border-t border-white/10 space-y-4">
-          <div className="flex items-center gap-3">
-            <ZoomIn size={14} className="text-slate-400" />
-            <input
-              type="range"
-              min={1}
-              max={3}
-              step={0.1}
-              value={zoom}
-              onChange={(e) => setZoom(Number(e.target.value))}
-              className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-[#CBA153]"
-            />
-            <button onClick={() => { setCrop({ x: 0, y: 0 }); setZoom(1); }} className="p-1 text-slate-400 hover:text-white" title="Reset Zoom">
-              <RotateCcw size={14} />
-            </button>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <ZoomIn size={14} className="text-slate-400 min-w-[14px]" />
+              <input
+                type="range"
+                min={1}
+                max={3}
+                step={0.01}
+                value={zoom}
+                onChange={(e) => setZoom(Number(e.target.value))}
+                className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#CBA153] outline-none hover:bg-white/20 transition-colors [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:bg-[#CBA153] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:bg-[#CBA153] [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:rounded-full"
+              />
+              <button onClick={() => { setCrop({ x: 0, y: 0 }); setZoom(1); setRotation(0); }} className="p-1 text-slate-400 hover:text-white min-w-[24px] flex justify-center" title="Reset">
+                <RotateCcw size={14} />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <RotateCcw size={14} className="text-slate-400 min-w-[14px]" />
+              <input
+                type="range"
+                min={0}
+                max={360}
+                step={1}
+                value={rotation}
+                onChange={(e) => setRotation(Number(e.target.value))}
+                className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#CBA153] outline-none hover:bg-white/20 transition-colors [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:bg-[#CBA153] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:bg-[#CBA153] [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:rounded-full"
+              />
+              <div className="min-w-[24px]"></div>
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 pt-2 border-t border-white/5">

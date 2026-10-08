@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useAdminStore } from "@/store/useAdminStore";
+import { uploadImage } from "@/lib/uploadHelper";
 
 export default function NavbarEditor() {
   const store = useAdminStore();
@@ -10,16 +11,11 @@ export default function NavbarEditor() {
     const file = e.target.files?.[0];
     if (file) {
       try {
-        const formData = new FormData();
-        formData.append("file", file);
-        const res = await fetch("/api/upload", { method: "POST", body: formData });
-        const data = await res.json();
+        const url = await uploadImage(file);
         
-        if (!res.ok) throw new Error(data.error || "Upload failed");
-        
-        if (type === 'clothing') store.setClothingLogoUrl(data.url);
-        else if (type === 'jewelry') store.setJewelryLogoUrl(data.url);
-        else if (type === 'tab') store.setTabLogoUrl(data.url);
+        if (type === 'clothing') store.setClothingLogoUrl(url);
+        else if (type === 'jewelry') store.setJewelryLogoUrl(url);
+        else if (type === 'tab') store.setTabLogoUrl(url);
       } catch (error) {
         console.error("Logo upload failed:", error);
         alert("Logo upload failed. Please try again.");

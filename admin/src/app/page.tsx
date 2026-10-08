@@ -24,7 +24,32 @@ export default function AdminDashboard() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishMessage, setPublishMessage] = useState<string | null>(null);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
   const router = useRouter();
+
+  // Protect route client-side
+  React.useEffect(() => {
+    import("@/lib/supabaseClient").then(({ supabase }) => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        const email = session?.user?.email?.toLowerCase();
+        if (!session || !email || email !== 'raanicloset2025@gmail.com') {
+          supabase.auth.signOut();
+          router.push("/login");
+        } else {
+          setIsAuthChecking(false);
+        }
+      });
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const email = session?.user?.email?.toLowerCase();
+        if (!session || !email || email !== 'raanicloset2025@gmail.com') {
+          router.push("/login");
+        }
+      });
+
+      return () => subscription.unsubscribe();
+    });
+  }, [router]);
 
   // Store access
   const adminState = useAdminStore();
