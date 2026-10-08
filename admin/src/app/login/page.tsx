@@ -59,7 +59,7 @@ export default function LoginPage() {
     if (otp.length >= 6) {
       setErrorMsg("");
       setAuthLoading(true);
-      const { error } = await supabase.auth.verifyOtp({
+      const { data, error } = await supabase.auth.verifyOtp({
         email,
         token: otp,
         type: 'email'
@@ -68,6 +68,8 @@ export default function LoginPage() {
       
       if (error) {
         setErrorMsg(error.message);
+      } else if (data?.session || data?.user) {
+        router.push("/");
       }
     }
   };
