@@ -37,6 +37,7 @@ export default function AdminDashboard() {
 
         const email = session?.user?.email?.toLowerCase();
         if (!session || !email || email !== 'raanicloset2025@gmail.com') {
+          console.error("KICKED OUT 1: session=", !!session, "email=", email);
           supabase.auth.signOut();
           router.push("/login");
         } else {
@@ -54,9 +55,9 @@ export default function AdminDashboard() {
           return;
         }
 
-        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || session) {
-          const email = session?.user?.email?.toLowerCase();
-          if (!session || !email || email !== 'raanicloset2025@gmail.com') {
+        if (session) {
+          const email = session?.user?.email?.toLowerCase().trim();
+          if (email !== 'raanicloset2025@gmail.com') {
             supabase.auth.signOut();
             router.push("/login");
           } else {
