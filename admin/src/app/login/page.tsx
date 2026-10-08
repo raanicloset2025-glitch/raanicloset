@@ -4,7 +4,9 @@ import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
-import InstallAppButton from "@/components/InstallAppButton";
+import dynamic from 'next/dynamic';
+
+const InstallAppButton = dynamic(() => import("@/components/InstallAppButton"), { ssr: false });
 
 export default function LoginPage() {
   const router = useRouter();

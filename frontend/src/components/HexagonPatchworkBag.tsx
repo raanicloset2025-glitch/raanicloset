@@ -11,6 +11,9 @@ interface HexagonPatchworkBagProps {
 }
 
 export default function HexagonPatchworkBag({ isJewelry = false, onClick, cartPulse = false, cartCount = 0 }: HexagonPatchworkBagProps) {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
+
   return (
     <button
       onClick={onClick}
@@ -34,7 +37,7 @@ export default function HexagonPatchworkBag({ isJewelry = false, onClick, cartPu
         strokeWidth={1.5}
       />
 
-      {cartCount > 0 && (
+      {mounted && cartCount > 0 && (
         <span className={`absolute -top-1 -right-2 flex h-[14px] w-[14px] items-center justify-center rounded-full shadow-sm text-[8px] font-bold transition-all duration-[800ms] ${cartPulse ? 'heartbeat-dot' : ''} bg-[#CBA153] text-[#1A1A1A] border border-[#CBA153]/50`}>
           {cartCount}
         </span>

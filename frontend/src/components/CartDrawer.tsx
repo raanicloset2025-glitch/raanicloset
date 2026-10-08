@@ -16,14 +16,18 @@ export default function CartDrawer() {
   // New States for State Morphing and Grand Transition
   const [isShowingQR, setIsShowingQR] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     setIsMobile(window.innerWidth < 768);
     // Reset QR state when cart is closed
     if (!isCartOpen) {
       setTimeout(() => setIsShowingQR(false), 500);
     }
   }, [isCartOpen]);
+
+  if (!mounted) return null;
 
   const filteredItems = cartItems.filter(item => {
     if (activeTab === "ALL") return true;
