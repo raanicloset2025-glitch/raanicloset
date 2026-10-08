@@ -125,7 +125,7 @@ export default function SearchEditor() {
                 </button>
               </div>
               <div className="flex flex-wrap gap-2">
-                {(trendingSearchesClothing || []).map((term, idx) => (
+                {(trendingSearchesClothing || []).map((term: string, idx: number) => (
                   <div key={idx} className="flex items-center gap-2 bg-[#FAFAFA] border border-[#EAEAEA] rounded-full px-3 py-1.5">
                     <input 
                       value={term}
@@ -148,7 +148,7 @@ export default function SearchEditor() {
                 </button>
               </div>
               <div className="flex flex-wrap gap-2">
-                {(trendingSearchesJewelry || []).map((term, idx) => (
+                {(trendingSearchesJewelry || []).map((term: string, idx: number) => (
                   <div key={idx} className="flex items-center gap-2 bg-[#FAFAFA] border border-[#EAEAEA] rounded-full px-3 py-1.5">
                     <input 
                       value={term}
@@ -194,7 +194,7 @@ export default function SearchEditor() {
           </div>
 
           <div className="space-y-2">
-            {Object.entries(searchSynonyms || {}).map(([key, val]) => (
+            {Object.entries(searchSynonyms || {}).map(([key, val]: [string, any]) => (
               <div key={key} className="flex items-center justify-between bg-[#FAFAFA] p-3 rounded border border-[#EAEAEA]">
                 <div className="flex items-center gap-4 text-xs font-medium text-[#1A0B16]">
                   <span className="text-[#888]">"{key}"</span>
@@ -227,7 +227,7 @@ export default function SearchEditor() {
             <div>
               <label className="text-xs font-semibold uppercase tracking-wider text-[#3B2F2F] block mb-2">Clothing</label>
               <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
-                {clothingCategories?.map(cat => {
+                {clothingCategories?.map((cat: any) => {
                   const isSelected = (searchCollectionsClothing || []).includes(cat.id);
                   return (
                     <div 
@@ -256,7 +256,7 @@ export default function SearchEditor() {
             <div>
               <label className="text-xs font-semibold uppercase tracking-wider text-[#3B2F2F] block mb-2">Jewelry</label>
               <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
-                {jewelryCategories?.map(cat => {
+                {jewelryCategories?.map((cat: any) => {
                   const isSelected = (searchCollectionsJewelry || []).includes(cat.id);
                   return (
                     <div 
@@ -297,7 +297,7 @@ export default function SearchEditor() {
             <div>
               <label className="text-xs font-semibold uppercase tracking-wider text-[#3B2F2F] block mb-2">Clothing</label>
               <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
-                {products?.filter(p => p.type === 'clothing').map(p => {
+                {products?.filter((p: any) => p.type === 'clothing').map((p: any) => {
                   const isSelected = (searchSignatureClothing || []).includes(p.id);
                   return (
                     <div 
@@ -326,7 +326,7 @@ export default function SearchEditor() {
             <div>
               <label className="text-xs font-semibold uppercase tracking-wider text-[#3B2F2F] block mb-2">Jewelry</label>
               <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
-                {products?.filter(p => p.type === 'jewelry').map(p => {
+                {products?.filter((p: any) => p.type === 'jewelry').map((p: any) => {
                   const isSelected = (searchSignatureJewelry || []).includes(p.id);
                   return (
                     <div 
