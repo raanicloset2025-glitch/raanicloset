@@ -31,6 +31,11 @@ export default function AdminDashboard() {
   React.useEffect(() => {
     import("@/lib/supabaseClient").then(({ supabase }) => {
       supabase.auth.getSession().then(({ data: { session } }) => {
+        // If coming from Google OAuth, wait for onAuthStateChange to parse the URL
+        if (typeof window !== 'undefined' && window.location.hash.includes('access_token')) {
+          return;
+        }
+
         const email = session?.user?.email?.toLowerCase();
         if (!session || !email || email !== 'raanicloset2025@gmail.com') {
           supabase.auth.signOut();
@@ -40,10 +45,15 @@ export default function AdminDashboard() {
         }
       });
 
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-        const email = session?.user?.email?.toLowerCase();
-        if (!session || !email || email !== 'raanicloset2025@gmail.com') {
-          router.push("/login");
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || session) {
+          const email = session?.user?.email?.toLowerCase();
+          if (!session || !email || email !== 'raanicloset2025@gmail.com') {
+            supabase.auth.signOut();
+            router.push("/login");
+          } else {
+            setIsAuthChecking(false);
+          }
         }
       });
 
