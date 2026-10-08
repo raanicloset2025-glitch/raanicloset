@@ -8,6 +8,8 @@ import dynamic from 'next/dynamic';
 
 const InstallAppButton = dynamic(() => import("@/components/InstallAppButton"), { ssr: false });
 
+const ALLOWED_EMAILS = ['raanicloset2025@gmail.com', 'brajendrakumar10156@gmail.com'];
+
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -16,21 +18,47 @@ export default function LoginPage() {
   const [otp, setOtp] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  // Cooldown timer
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (resendCooldown > 0) {
+      timer = setInterval(() => {
+        setResendCooldown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
+  const verifyAdminStatus = async (session: any) => {
+    const userEmail = session?.user?.email?.toLowerCase();
+    if (!userEmail || !ALLOWED_EMAILS.includes(userEmail)) {
+      await supabase.auth.signOut();
+      setErrorMsg("Access Denied: You are not authorized to access the Admin Panel.");
+      setStep('email');
+      setLoading(false);
+      return false;
+    }
+    return true;
+  };
 
   // Check if logged in via Supabase
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
-        router.push("/");
+        const isAdmin = await verifyAdminStatus(session);
+        if (isAdmin) router.push("/");
       } else {
         setLoading(false);
       }
     });
 
     // Listen for changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session) {
-        router.push("/");
+        const isAdmin = await verifyAdminStatus(session);
+        if (isAdmin) router.push("/");
       }
     });
 
@@ -39,8 +67,15 @@ export default function LoginPage() {
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
+    if (email && resendCooldown === 0 && !authLoading) {
       setErrorMsg("");
+      
+      const checkEmail = email.toLowerCase().trim();
+      if (!ALLOWED_EMAILS.includes(checkEmail)) {
+        setErrorMsg("Access Denied: You are not authorized to access the Admin Panel.");
+        return;
+      }
+
       setAuthLoading(true);
       const { error } = await supabase.auth.signInWithOtp({
         email: email,
@@ -49,6 +84,7 @@ export default function LoginPage() {
       if (error) {
         setErrorMsg(error.message);
       } else {
+        setResendCooldown(60); // 60 seconds cooldown
         setStep('otp');
       }
     }
@@ -166,10 +202,10 @@ export default function LoginPage() {
                   <button 
                     type="button"
                     onClick={handleEmailSubmit}
-                    disabled={authLoading}
+                    disabled={authLoading || resendCooldown > 0}
                     className="w-full text-center font-sans text-[9px] uppercase tracking-[0.2em] text-[#555] hover:text-[#CBA153] transition-colors disabled:opacity-50"
                   >
-                    Resend OTP
+                    {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend OTP"}
                   </button>
                   <button 
                     type="button"
