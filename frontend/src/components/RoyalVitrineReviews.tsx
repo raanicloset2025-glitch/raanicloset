@@ -29,8 +29,6 @@ export default function RoyalVitrineReviews() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   
-  if (!mounted) return <div className="py-24" />;
-  
   // removed duplicate displayReviews
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -68,7 +66,7 @@ export default function RoyalVitrineReviews() {
     );
     observer.observe(containerRef.current);
     return () => observer.disconnect();
-  }, []);
+  }, [mounted]);
 
   // 2. Auto-Scroll Infinite Marquee Engine
   useEffect(() => {
@@ -148,6 +146,8 @@ export default function RoyalVitrineReviews() {
     scrollRef.current.scrollBy({ left: 340, behavior: 'smooth' });
     setTimeout(() => setIsDragging(false), 500); // Resume
   };
+
+  if (!mounted) return <div className="py-24" />;
 
   return (
     <section

@@ -29,7 +29,7 @@ export default function ClientDiaries() {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  if (!mounted) return <div className="min-h-screen" />;
+
 
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -56,7 +56,7 @@ export default function ClientDiaries() {
     );
     observer.observe(containerRef.current);
     return () => observer.disconnect();
-  }, []);
+  }, [mounted]);
 
   useEffect(() => {
     if (!scrollRef.current) return;
@@ -115,6 +115,8 @@ export default function ClientDiaries() {
   const headingColor = isJewelry ? "text-[#EAEAEA]" : "text-[#1A0B16]";
   const bgColor = isJewelry ? "bg-[#050102]" : "bg-[#F9F6F0]";
   
+  if (!mounted) return <div className="min-h-screen" />;
+
   return (
     <>
       <section ref={containerRef} className={`py-24 md:py-32 relative transition-colors duration-1000 ${bgColor} overflow-hidden`}>
