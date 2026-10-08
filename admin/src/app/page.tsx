@@ -46,6 +46,15 @@ export default function AdminDashboard() {
       });
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (!session && typeof window !== 'undefined' && window.location.hash.includes('access_token')) {
+          return;
+        }
+
+        if (event === 'SIGNED_OUT') {
+          router.push("/login");
+          return;
+        }
+
         if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || session) {
           const email = session?.user?.email?.toLowerCase();
           if (!session || !email || email !== 'raanicloset2025@gmail.com') {
@@ -132,6 +141,14 @@ export default function AdminDashboard() {
       console.error(e);
     }
   };
+
+  if (isAuthChecking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F0F0F0]">
+        <div className="w-8 h-8 animate-spin rounded-full border-b-2 border-[#CBA153]" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F0F0F0] text-[#1A1A1A] flex flex-col md:flex-row font-sans selection:bg-[#E0A29C] selection:text-white overflow-hidden">
