@@ -981,7 +981,8 @@ export const useAdminStore = create<AdminState>()(
       setProducts: (v) => set({ products: v }),
       fetchProducts: async () => {
         try {
-          const res = await fetch("http://localhost:8787/api/products");
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8787';
+          const res = await fetch(`${apiUrl}/api/products`);
           if (res.ok) {
             const data = await res.json();
             set({ products: data, hasHydrated: true });
@@ -1000,7 +1001,8 @@ export const useAdminStore = create<AdminState>()(
         // Optimistic UI update
         set((state) => ({ products: [newProd, ...state.products] }));
         try {
-          await fetch("http://localhost:8787/api/products", {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8787';
+          await fetch(`${apiUrl}/api/products`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(newProd),
