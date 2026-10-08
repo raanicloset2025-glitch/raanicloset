@@ -13,7 +13,7 @@ const ALLOWED_EMAILS = ['raanicloset2025@gmail.com'];
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [step, setStep] = useState<'intro' | 'email' | 'otp' | 'google-loading'>('intro');
+  const [step, setStep] = useState<'email' | 'otp' | 'google-loading'>('email');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
@@ -162,19 +162,7 @@ export default function LoginPage() {
               </div>
             )}
             
-            {step === 'intro' ? (
-              <div className="flex flex-col items-center justify-center py-4">
-                <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-[#F9F6F0]/60 text-center mb-10 leading-loose">
-                  Restricted Access. <br/> Authorized Personnel Only.
-                </p>
-                <button
-                  onClick={() => setStep('email')}
-                  className="w-full bg-white/5 border border-white/10 hover:bg-[#CBA153]/10 hover:border-[#CBA153]/30 text-[#F9F6F0] hover:text-[#CBA153] py-4 text-[10px] font-bold uppercase tracking-[0.25em] transition-all duration-300"
-                >
-                  Enter Command
-                </button>
-              </div>
-            ) : step === 'google-loading' ? (
+            {step === 'google-loading' ? (
                <div className="flex flex-col items-center justify-center py-10">
                  <Loader2 className="w-8 h-8 animate-spin text-[#CBA153]" />
                  <p className="mt-6 font-sans text-[9px] tracking-[0.25em] uppercase text-[#F9F6F0]/70">
