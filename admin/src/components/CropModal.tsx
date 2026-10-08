@@ -25,6 +25,7 @@ export default function CropModal({
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [dynamicAspect, setDynamicAspect] = useState<number>(aspect);
 
   const onCropChange = (crop: { x: number; y: number }) => {
     setCrop(crop);
@@ -37,6 +38,12 @@ export default function CropModal({
   const handleCropComplete = useCallback((_croppedArea: any, pixels: any) => {
     setCroppedAreaPixels(pixels);
   }, []);
+  
+  const onMediaLoaded = (mediaSize: { naturalWidth: number, naturalHeight: number }) => {
+    if (mediaSize.naturalWidth && mediaSize.naturalHeight) {
+      setDynamicAspect(mediaSize.naturalWidth / mediaSize.naturalHeight);
+    }
+  };
 
   const [isCompressing, setIsCompressing] = useState(false);
 
@@ -157,7 +164,8 @@ export default function CropModal({
             crop={crop}
             zoom={zoom}
             rotation={rotation}
-            aspect={aspect}
+            aspect={dynamicAspect}
+              onMediaLoaded={onMediaLoaded}
             onCropChange={onCropChange}
             onZoomChange={onZoomChange}
             onRotationChange={setRotation}
