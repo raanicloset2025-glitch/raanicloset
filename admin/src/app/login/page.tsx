@@ -400,7 +400,7 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-8 text-center text-[#1a1a1a] text-[9px] uppercase tracking-[0.2em]">
-          Ac {new Date().getFullYear()} Maison Raani. All Rights Reserved.
+          &copy; {new Date().getFullYear()} Maison Raani. All Rights Reserved.
         </p>
       </div>
     </div>

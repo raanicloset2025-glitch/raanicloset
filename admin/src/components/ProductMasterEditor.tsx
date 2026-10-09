@@ -145,7 +145,7 @@ export default function ProductMasterEditor({ product, onClose }: ProductMasterE
                 </div>
                 <div className="grid grid-cols-3 gap-6">
                   {images.map((img, i) => (
-                    <div key={i} className="relative aspect-[3/4] rounded-xl overflow-hidden border border-[#EAEAEA] group bg-white">
+                    <div key={img + i} className="relative aspect-[3/4] rounded-xl overflow-hidden border border-[#EAEAEA] group bg-white">
                       <img src={img} alt={`Gallery ${i}`} className="w-full h-full object-cover" />
                       <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white cursor-pointer backdrop-blur-sm">
                         <Camera size={24} className="mb-2 text-[#CBA153]" />
@@ -247,7 +247,7 @@ export default function ProductMasterEditor({ product, onClose }: ProductMasterE
 
                     <div className="space-y-3">
                       {specs.map((spec, i) => (
-                        <div key={i} className="flex items-center gap-3 bg-white border border-[#EAEAEA] p-3 rounded-lg group">
+                        <div key={spec.label + spec.value + i} className="flex items-center gap-3 bg-white border border-[#EAEAEA] p-3 rounded-lg group">
                           <GripVertical size={16} className="text-[#CCC] cursor-move hidden md:block" />
                           <input 
                             value={spec.label}
