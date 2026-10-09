@@ -29,6 +29,7 @@ interface AppState {
   isAuthLoading: boolean;
   authInitialized: boolean;
   isAuthModalOpen: boolean;
+  authError: string | null;
   
   // Search
   isSearchModalOpen: boolean;
@@ -50,6 +51,7 @@ interface AppState {
   login: (email: string, name?: string, avatar_url?: string) => void;
   logout: () => Promise<void>;
   setAuthModalOpen: (val: boolean) => void;
+  setAuthError: (val: string | null) => void;
   
   // Search Actions
   setSearchModalOpen: (val: boolean) => void;
@@ -74,6 +76,7 @@ export const useStore = create<AppState>()(persist((set) => ({
   isAuthLoading: true,
   authInitialized: false,
   isAuthModalOpen: false,
+  authError: null,
   
   isSearchModalOpen: false,
   
@@ -89,6 +92,22 @@ export const useStore = create<AppState>()(persist((set) => ({
   
   initAuth: () => {
     set({ isAuthLoading: true });
+
+    // 1. Detect OAuth redirect errors in URL parameters
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const errorDesc = params.get('error_description');
+      const err = params.get('error');
+
+      if (errorDesc || err) {
+        const message = errorDesc
+          ? decodeURIComponent(errorDesc.replace(/\+/g, ' '))
+          : (err || 'Authentication failed');
+        set({ authError: message, isAuthModalOpen: true, isAuthLoading: false, authInitialized: true });
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+
     supabase.auth
       .getSession()
       .then(({ data: { session } }) => {
@@ -102,8 +121,14 @@ export const useStore = create<AppState>()(persist((set) => ({
             },
             isAuthLoading: false,
             authInitialized: true,
-            isAuthModalOpen: false
+            isAuthModalOpen: false,
+            authError: null,
           });
+
+          // Clean up any remaining auth parameters from the URL
+          if (typeof window !== 'undefined' && (window.location.search.includes('code=') || window.location.search.includes('error='))) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
         } else {
           set({ user: null, isAuthLoading: false, authInitialized: true });
         }
@@ -124,25 +149,35 @@ export const useStore = create<AppState>()(persist((set) => ({
           },
           isAuthLoading: false,
           authInitialized: true,
-          isAuthModalOpen: false
+          isAuthModalOpen: false,
+          authError: null,
         });
+
+        // Clean up code parameter from address bar on successful sign-in
+        if (typeof window !== 'undefined' && window.location.search.includes('code=')) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
       } else {
         set({ user: null, isAuthLoading: false, authInitialized: true });
       }
     });
   },
   
-  login: (email, name = 'Guest', avatar_url) => set({ user: { email, name, avatar_url }, isAuthModalOpen: false }),
+  login: (email, name = 'Guest', avatar_url) => set({ user: { email, name, avatar_url }, isAuthModalOpen: false, authError: null }),
   logout: async () => {
     try {
       await supabase.auth.signOut();
     } catch (err) {
       console.error("[Store] Logout error:", err);
     } finally {
-      set({ user: null });
+      set({ user: null, authError: null });
     }
   },
-  setAuthModalOpen: (val: boolean) => set({ isAuthModalOpen: val }),
+  setAuthModalOpen: (val: boolean) => set((state) => ({ 
+    isAuthModalOpen: val,
+    authError: val ? state.authError : null 
+  })),
+  setAuthError: (val: string | null) => set({ authError: val }),
   
   setSearchModalOpen: (val: boolean) => set({ isSearchModalOpen: val }),
   

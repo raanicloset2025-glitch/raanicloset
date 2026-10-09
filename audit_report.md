@@ -228,10 +228,25 @@ All issues have been completely remediated in source code without altering any u
 ### 5.2 Next.js Production Build Validation (`npm run build`)
 - **Admin**:
   - Command: `npm run build`
-  - Output: Compiled successfully without warnings or runtime errors. Static pages and API routes (`/api/store`, `/api/upload`) successfully generated.
+  - Exit Code: **0** (Success)
+  - Output summary:
+    - `○ /` (Static)
+    - `○ /login` (Static)
+    - `ƒ /api/store` (Dynamic API route)
+    - `ƒ /api/upload` (Dynamic API route)
+    - Static pages generated in 16.1s; build finalized successfully.
 - **Frontend**:
   - Command: `npm run build`
-  - Output: Compiled successfully. Dynamic and static routes generated without errors.
+  - Exit Code: **0** (Success)
+  - Output summary:
+    - `○ /` (Static)
+    - `○ /admin` (Static)
+    - `○ /bespoke` (Static)
+    - `○ /collection` (Static)
+    - `○ /trousseau` (Static)
+    - `ƒ /api/store` (Dynamic API route)
+    - `ƒ /product/[id]` (Dynamic server route)
+    - Static pages generated in 26.7s; compiled successfully.
 
 ### 5.3 UI & Animation Preservation Guarantee
 - 100% of existing luxury styling (dark mode, `#CBA153` gold accents, glassmorphic cards, custom typography) preserved intact.

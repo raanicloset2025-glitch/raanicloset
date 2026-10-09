@@ -8,6 +8,8 @@ export default function AuthModal() {
   const isAuthModalOpen = useStore((state) => state.isAuthModalOpen);
   const setAuthModalOpen = useStore((state) => state.setAuthModalOpen);
   const isJewelry = useStore((state) => state.isJewelry);
+  const authError = useStore((state) => state.authError);
+  const setAuthError = useStore((state) => state.setAuthError);
   
   const [step, setStep] = useState<'email' | 'otp' | 'google-loading'>('email');
   const [email, setEmail] = useState('');
@@ -16,6 +18,20 @@ export default function AuthModal() {
   const [errorMsg, setErrorMsg] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+
+  // Sync authError from store (e.g. from OAuth redirect failure)
+  useEffect(() => {
+    if (authError) {
+      setErrorMsg(authError);
+      setStep('email');
+    }
+  }, [authError]);
+
+  const handleClose = () => {
+    setErrorMsg("");
+    setAuthError(null);
+    setAuthModalOpen(false);
+  };
 
   // Cooldown timer using setTimeout to avoid interval leaks
   useEffect(() => {
@@ -125,7 +141,7 @@ export default function AuthModal() {
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/40 backdrop-blur-md"
-        onClick={() => setAuthModalOpen(false)}
+        onClick={handleClose}
       ></div>
 
       {/* Modal Content */}
@@ -138,7 +154,7 @@ export default function AuthModal() {
       >
         <button 
           type="button"
-          onClick={() => setAuthModalOpen(false)}
+          onClick={handleClose}
           className={`absolute top-6 right-6 z-50 p-2 rounded-full transition-colors ${
             isJewelry ? 'hover:bg-white/10' : 'hover:bg-black/5'
           }`}

@@ -34,10 +34,16 @@ export default function LoginPage() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const err = params.get('error');
+      const errDesc = params.get('error_description');
       if (err === 'unauthorized') {
         setErrorMsg("Access Denied: You are not authorized to access the Admin Panel.");
-      } else if (err) {
-        setErrorMsg(decodeURIComponent(err));
+      } else if (errDesc || err) {
+        const rawMsg = errDesc || err || '';
+        setErrorMsg(decodeURIComponent(rawMsg.replace(/\+/g, ' ')));
+      }
+      // Clean up error query parameters from URL so refreshes don't persist error
+      if (err || errDesc) {
+        window.history.replaceState({}, document.title, window.location.pathname);
       }
     }
   }, []);
@@ -84,7 +90,12 @@ export default function LoginPage() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session) {
         const isAdmin = await verifyAdminStatus(session);
-        if (isAdmin) router.push("/");
+        if (isAdmin) {
+          if (typeof window !== 'undefined' && window.location.search.includes('code=')) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+          router.push("/");
+        }
       }
     });
 

@@ -229,6 +229,35 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                      for (var i = 0; i < registrations.length; i++) {
+                        registrations[i].unregister();
+                      }
+                    });
+                  }
+                  if (typeof window !== 'undefined' && 'caches' in window) {
+                    caches.keys().then(function(names) {
+                      for (var j = 0; j < names.length; j++) {
+                        caches.delete(names[j]);
+                      }
+                    });
+                  }
+                  if (typeof window !== 'undefined' && 'indexedDB' in window) {
+                    try { window.indexedDB.deleteDatabase('workbox-expiration'); } catch(e) {}
+                  }
+                } catch(e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className={`${playfair.variable} ${montserrat.variable} ${greatVibes.variable} ${cinzel.variable} font-sans antialiased`}>
         <script
           type="application/ld+json"

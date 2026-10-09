@@ -183,3 +183,33 @@ Implement robust fixes for any issues found in these three areas making sure the
 - [ ] Audit report is generated in a simple `audit_report.md` file.
 - [ ] The Auth, Crop, and API files are updated with error handling and proper URL/promise management.
 
+## 2026-10-09T08:38:08Z
+
+<USER_REQUEST>
+# Teamwork Project Prompt
+
+> Requested team: Small focused team (Debugging)
+
+The goal is to deeply investigate and fix the persistent Supabase Google OAuth 'Unable to exchange external code' error occurring on both the Admin (Render) and Frontend (Cloudflare) deployments, and to completely eradicate Service Worker (PWA) caching issues that are trapping devices in broken states.
+
+Working directory: C:/Users/satya/Documents/antigravity/modest-hypatia
+
+## Requirements
+
+### R1. OAuth Code Exchange Resolution
+Investigate all Supabase client initialization, callback handling, and PKCE configurations in both `admin` and `frontend`. Identify if the error is caused by code (e.g. missing PKCE callback routes) or if it is exclusively a Supabase Dashboard configuration issue. Fix any code-related causes. Generate a markdown guide if it requires Dashboard changes.
+
+### R2. Service Worker Caching Eradication
+Locate all Service Worker registrations (e.g. `next-pwa` in `next.config.ts`, `sw.js` in `layout.tsx`). Modify them to forcefully unregister existing service workers and clear caches on client load, ensuring devices immediately receive pushed updates.
+
+## Acceptance Criteria
+
+### Verification
+- [ ] No active Service Workers are registered; any existing ones are actively unregistered on page load.
+- [ ] Any required Supabase Dashboard configuration changes are documented clearly.
+- [ ] Code-based OAuth callback handlers are verified to exist and function correctly.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-10-09T14:08:08+05:30.
+</ADDITIONAL_METADATA>
+
