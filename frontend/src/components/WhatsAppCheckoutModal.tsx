@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { CartItem, useStore } from "@/store/useStore";
 import { useAdminStore } from "@/store/useAdminStore";
@@ -95,7 +96,7 @@ export default function WhatsAppCheckoutModal({ isOpen, onClose, items, total, c
 
   const mainItem = items[0];
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 z-[200] flex justify-end">
       {/* Backdrop */}
       <div 
@@ -216,4 +217,7 @@ export default function WhatsAppCheckoutModal({ isOpen, onClose, items, total, c
       </div>
     </div>
   );
+
+  if (typeof document === "undefined") return null;
+  return createPortal(modalContent, document.body);
 }
