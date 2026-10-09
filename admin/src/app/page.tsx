@@ -115,16 +115,7 @@ export default function AdminDashboard() {
     };
   }, [router]);
 
-  // Store access
-  // adminState is retrieved using getState() on demand to avoid re-renders
-  // @ts-ignore
-  const fetchProducts = useAdminStore((s) => s.fetchProducts);
-  
-  React.useEffect(() => {
-    if (typeof fetchProducts === 'function') {
-      fetchProducts();
-    }
-  }, [fetchProducts]);
+
 
   // State for Logos & Videos
   const [clothingVideo, setClothingVideo] = useState<string>("");
