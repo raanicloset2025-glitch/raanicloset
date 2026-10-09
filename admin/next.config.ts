@@ -13,11 +13,6 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  turbopack: {},
-  webpack(config) {
-    config.experiments = { ...config.experiments, asyncWebAssembly: true, layers: true };
-    return config;
-  },
   async headers() {
     return [
       {
