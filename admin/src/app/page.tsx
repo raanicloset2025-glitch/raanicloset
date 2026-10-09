@@ -139,33 +139,7 @@ export default function AdminDashboard() {
 
   const handlePublish = async () => {
     setIsPublishing(true);
-    setPublishMessage(null);
-    try {
-      // Exclude functions and internal state from payload
-      const stateObj = useAdminStore.getState() as any;
-      const payload = Object.fromEntries(
-        Object.entries(stateObj).filter(([_, v]) => typeof v !== 'function')
-      );
-
-      const authData = localStorage.getItem('raani_admin_auth_token');
-      let token = '';
-      if (authData) {
-        try { token = JSON.parse(authData).session.access_token; } catch(e) {}
-      }
-
-      const res = await fetch("/api/store", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          ...(token ? { "Authorization": `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        setPublishMessage("✓ Changes Published & Synced to Frontend!");
-      } else {
-        setPublishMessage("⚠ Failed to publish changes.");
+    const errData = await res.json().catch(() => ({})); setPublishMessage(⚠ Failed to publish: );;
       }
     } catch (e) {
       setPublishMessage("⚠ Network error publishing changes.");
