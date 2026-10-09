@@ -43,10 +43,8 @@ export default function FooterEditor() {
     return unsub;
   }, []);
 
-  if (!mounted || !store.setBrandName) return null;
   const [activeTab, setActiveTab] = useState<typeof TABS[number]['id']>('concierge');
-
-  return (
+  if (!mounted || !store.setBrandName) return null;
     <div className="w-full h-full flex flex-col bg-white">
       {/* 1. Editor Header & Segmented Control */}
       <div className="border-b border-gray-100 p-6 bg-gray-50/50">

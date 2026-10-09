@@ -54,7 +54,7 @@ Conduct a comprehensive stability and bug-fixing pass across the entire 'modest-
 |-------|------|-----------|--------|---------|
 | explorer_survey_r9_1 | teamwork_preview_explorer | Survey R1: Crashes & Hydration | failed (network dropped) | b1324396-3b1b-46a0-b477-316ea67c9d3d |
 | explorer_survey_r9_1_repl | teamwork_preview_explorer | Survey R1: Crashes & Hydration | in-progress | 20a7f390-39cc-4880-82c8-18360468ee40 |
-| explorer_survey_r9_2 | teamwork_preview_explorer | Survey R2: Mobile Responsiveness | in-progress | 6142b9ef-3a2a-4822-ab17-b8a872b6a0fb |
+| explorer_survey_r9_2 | teamwork_preview_explorer | Survey R2: Mobile Responsiveness | completed | 6142b9ef-3a2a-4822-ab17-b8a872b6a0fb |
 | explorer_survey_r9_3 | teamwork_preview_explorer | Survey R3: State & Fetching | in-progress | 0a31eade-7216-4931-a5ed-43e13c2ff05f |
 
 ## Succession Status

@@ -58,7 +58,7 @@ Execute single self-contained fix for Supabase OTP login bugs (double-click prev
 
 ## Active Timers
 - Heartbeat cron: 3e1372ca-7aa7-42a5-99ea-ff1dfee1e159/task-14
-- Safety timer: 3e1372ca-7aa7-42a5-99ea-ff1dfee1e159/task-106
+- Safety timer: 3e1372ca-7aa7-42a5-99ea-ff1dfee1e159/task-136
 
 ## Artifact Index
 - C:\Users\satya\Documents\antigravity\modest-hypatia\.agents\swe_2\DISPATCH.md — Incoming dispatch record

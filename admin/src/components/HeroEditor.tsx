@@ -23,7 +23,6 @@ export default function HeroEditor() {
     return unsub;
   }, []);
 
-  if (!mounted || !store.setBrandName) return null;
   const [activeMode, setActiveMode] = useState<"clothing" | "jewelry">("clothing");
   const [devicePreview, setDevicePreview] = useState<"desktop" | "mobile">("desktop");
 
@@ -82,8 +81,7 @@ export default function HeroEditor() {
       alert("Error connecting to frontend API.");
     }
   };
-
-  return (
+  if (!mounted || !store.setBrandName) return null;
     <div className="flex-1 flex flex-col h-full bg-[#080808] text-neutral-200 selection:bg-[#CBA153]/30 overflow-y-auto font-sans">
       
       {/* ── TOP ATELIER BAR ── */}

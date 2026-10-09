@@ -20,10 +20,7 @@ export default function StoryEditor() {
     });
     return unsub;
   }, []);
-
   if (!mounted || !store.setBrandName) return null;
-
-  return (
     <div className="max-w-4xl mx-auto space-y-8 pb-32">
       <div className="bg-white p-6 md:p-10 rounded-2xl border border-gray-100 shadow-sm">
         <h2 className="text-xl font-serif text-gray-900 mb-2">Heritage Story Editor</h2>
