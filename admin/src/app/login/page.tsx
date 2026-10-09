@@ -2,7 +2,7 @@
 
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Loader2 } from "lucide-react";
 import dynamic from 'next/dynamic';
 
@@ -21,6 +21,7 @@ function isAllowedAdmin(email?: string | null): boolean {
 
 export default function LoginPage() {
   const router = useRouter();
+  const inFlightRef = useRef(false);
   const [loading, setLoading] = useState(true);
   const [step, setStep] = useState<'email' | 'otp' | 'google-loading'>('email');
   const [email, setEmail] = useState('');
@@ -104,8 +105,12 @@ export default function LoginPage() {
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (inFlightRef.current || authLoading) return;
+
     const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail || resendCooldown > 0 || authLoading) return;
+    setEmail(cleanEmail);
+
+    if (!cleanEmail || resendCooldown > 0) return;
 
     setErrorMsg("");
 
@@ -114,7 +119,9 @@ export default function LoginPage() {
       return;
     }
 
+    inFlightRef.current = true;
     setAuthLoading(true);
+
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email: cleanEmail,
@@ -125,30 +132,44 @@ export default function LoginPage() {
       });
 
       if (error) {
-        setErrorMsg(error.message);
+        const msg = error.message.toLowerCase();
+        if (msg.includes("rate") || msg.includes("too many")) {
+          setErrorMsg("Too many requests. Please wait a moment before trying again.");
+        } else {
+          setErrorMsg(error.message);
+        }
       } else {
         setResendCooldown(60); // 60 seconds cooldown
         setStep('otp');
       }
     } catch (err: any) {
       console.error("[Login] OTP request failed:", err);
-      setErrorMsg(err?.message || "Failed to send verification code. Please check your network connection.");
+      const msg = (err?.message || "").toLowerCase();
+      if (msg.includes("rate") || msg.includes("too many")) {
+        setErrorMsg("Too many requests. Please wait a moment before trying again.");
+      } else {
+        setErrorMsg(err?.message || "Failed to send verification code. Please check your network connection.");
+      }
     } finally {
+      inFlightRef.current = false;
       setAuthLoading(false);
     }
   };
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (inFlightRef.current || authLoading) return;
+
     const cleanOtp = otp.trim();
     const cleanEmail = email.trim().toLowerCase();
 
-    if (cleanOtp.length < 6 || authLoading) {
-      if (cleanOtp.length < 6) setErrorMsg("Please enter the complete 6-digit code.");
+    if (cleanOtp.length < 6) {
+      setErrorMsg("Please enter the complete 6-digit code.");
       return;
     }
 
     setErrorMsg("");
+    inFlightRef.current = true;
     setAuthLoading(true);
 
     try {
@@ -159,22 +180,44 @@ export default function LoginPage() {
       });
 
       if (error) {
-        setErrorMsg(error.message);
+        const msg = error.message.toLowerCase();
+        if (msg.includes("expired") || msg.includes("invalid") || msg.includes("token")) {
+          setErrorMsg("Invalid or expired verification code. Please try again.");
+        } else if (msg.includes("rate") || msg.includes("too many")) {
+          setErrorMsg("Too many attempts. Please wait a moment before trying again.");
+        } else {
+          setErrorMsg(error.message);
+        }
         setOtp(""); // Auto-clear OTP so admin can re-enter fresh code
       } else if (data?.session || data?.user) {
         const isAdmin = await verifyAdminStatus(data.session);
         if (isAdmin) router.push("/");
+      } else {
+        setErrorMsg("Verification failed. Please try again.");
+        setOtp("");
       }
     } catch (err: any) {
       console.error("[Login] OTP verification failed:", err);
-      setErrorMsg(err?.message || "Verification failed. Please check your network connection.");
+      const msg = (err?.message || "").toLowerCase();
+      if (msg.includes("expired") || msg.includes("invalid") || msg.includes("token")) {
+        setErrorMsg("Invalid or expired verification code. Please try again.");
+      } else if (msg.includes("rate") || msg.includes("too many")) {
+        setErrorMsg("Too many attempts. Please wait a moment before trying again.");
+      } else {
+        setErrorMsg(err?.message || "Verification failed. Please check your network connection.");
+      }
+      setOtp("");
     } finally {
+      inFlightRef.current = false;
       setAuthLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
+    if (inFlightRef.current || authLoading) return;
     setErrorMsg("");
+    inFlightRef.current = true;
+    setAuthLoading(true);
     setStep('google-loading');
 
     try {
@@ -193,6 +236,9 @@ export default function LoginPage() {
       console.error("[Login] Google OAuth failed:", err);
       setErrorMsg(err?.message || "Google sign-in initialization failed. Please try again.");
       setStep('email');
+    } finally {
+      inFlightRef.current = false;
+      setAuthLoading(false);
     }
   };
 
@@ -254,10 +300,11 @@ export default function LoginPage() {
                     type="text" 
                     required
                     maxLength={6}
+                    disabled={authLoading}
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                     placeholder="6-DIGIT OTP"
-                    className="w-full h-12 px-4 bg-[#050102] border border-white/[0.08] focus:border-[#CBA153]/50 outline-none font-sans text-center text-lg tracking-[0.5em] text-[#F9F6F0] placeholder-white/20 transition-colors"
+                    className="w-full h-12 px-4 bg-[#050102] border border-white/[0.08] focus:border-[#CBA153]/50 outline-none font-sans text-center text-lg tracking-[0.5em] text-[#F9F6F0] placeholder-white/20 transition-colors disabled:opacity-50"
                   />
 
                   <button 
@@ -276,11 +323,17 @@ export default function LoginPage() {
                     disabled={authLoading || resendCooldown > 0}
                     className="w-full text-center font-sans text-[9px] uppercase tracking-[0.2em] text-[#555] hover:text-[#CBA153] transition-colors disabled:opacity-50"
                   >
-                    {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend OTP"}
+                    {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : authLoading ? "Sending..." : "Resend OTP"}
                   </button>
                   <button 
                     type="button"
-                    onClick={() => setStep('email')}
+                    onClick={() => {
+                      if (!authLoading) {
+                        setErrorMsg("");
+                        setOtp("");
+                        setStep('email');
+                      }
+                    }}
                     disabled={authLoading}
                     className="w-full text-center font-sans text-[9px] uppercase tracking-[0.2em] text-[#555] hover:text-white transition-colors disabled:opacity-50"
                   >
@@ -301,10 +354,11 @@ export default function LoginPage() {
                   <input 
                     type="email" 
                     required
+                    disabled={authLoading}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Email Address"
-                    className="w-full h-12 px-4 bg-[#050102] border border-white/[0.08] focus:border-[#CBA153]/50 outline-none font-sans text-sm tracking-wide text-[#F9F6F0] placeholder-white/20 transition-colors text-center"
+                    className="w-full h-12 px-4 bg-[#050102] border border-white/[0.08] focus:border-[#CBA153]/50 outline-none font-sans text-sm tracking-wide text-[#F9F6F0] placeholder-white/20 transition-colors text-center disabled:opacity-50"
                   />
 
                   <button 
@@ -325,7 +379,8 @@ export default function LoginPage() {
                 <button
                   onClick={handleGoogleLogin}
                   type="button"
-                  className="w-full bg-[#050102] border border-white/[0.08] hover:border-[#CBA153]/50 text-[#F9F6F0] hover:text-[#CBA153] py-3.5 text-[10px] font-bold uppercase tracking-[0.25em] transition-all duration-300 flex items-center justify-center gap-3 group"
+                  disabled={authLoading}
+                  className="w-full bg-[#050102] border border-white/[0.08] hover:border-[#CBA153]/50 text-[#F9F6F0] hover:text-[#CBA153] py-3.5 text-[10px] font-bold uppercase tracking-[0.25em] transition-all duration-300 flex items-center justify-center gap-3 group disabled:opacity-50"
                 >
                   <svg className="w-4 h-4 text-current transition-colors" viewBox="0 0 24 24">
                     <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

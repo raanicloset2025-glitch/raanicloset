@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 
 let inFlightFetchPromise: Promise<void> | null = null;
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ 1. Supporting Domain Models ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+//  1. Supporting Domain Models 
 
 export interface ProductCraftSpec {
   label: string; // e.g. "Material", "Origin", "Care", "Craftsmanship", "Technique"
@@ -27,7 +27,7 @@ export interface Product {
   isFeatured?: boolean;
   isStarred?: boolean;   // Whether shown in homepage Signature Collection (max 4)
   starredAt?: number;    // Timestamp used to sort starred products
-  isCategoryFeatured?: boolean; // Shown when its category is clicked on homepage (max 4 per category) — independent of Signature star
+  isCategoryFeatured?: boolean; // Shown when its category is clicked on homepage (max 4 per category)  independent of Signature star
   categoryFeaturedAt?: number;  // Timestamp used to sort category-featured products
 }
 
@@ -46,7 +46,7 @@ export interface VideoCard {
   no: string;
 }
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ 2. Full Admin Store Interface ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+//  2. Full Admin Store Interface 
 
 export interface AdminState {
   // --- G. About Us & Marquee ---
@@ -357,10 +357,10 @@ export interface AdminState {
   fetchFromServer: () => Promise<void>;
 }
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ 3. Canonical 14 Default Masterpieces ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+//  3. Canonical 14 Default Masterpieces 
 
 const defaultProducts: Product[] = [
-  // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Clothing (8 Pieces) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+  //  Clothing (8 Pieces) 
   {
     id: "c1",
     title: "Ivory Chanderi Kurta",
@@ -522,7 +522,7 @@ const defaultProducts: Product[] = [
     isFeatured: false
   },
 
-  // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ Jewelry (6 Pieces) ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+  //  Jewelry (6 Pieces) 
   {
     id: "j1",
     title: "Kundan Choker Set",
@@ -585,7 +585,7 @@ const defaultProducts: Product[] = [
     description: "Hand-crafted jadau bangles set with natural emeralds and 22K gold. The jadau technique requires 40+ hours of master craftsmanship.",
     story: "Classic elephant-head finials with ruby eyes, interlocking seamlessly for an ergonomic wrist fit.",
     craftTitle: "The Craft",
-    craftText: "Chased and repoussÃƒÆ’Ã‚Â©d 22K gold with closed-back foil-set gemstones.",
+    craftText: "Chased and repoussd 22K gold with closed-back foil-set gemstones.",
     craftSpecs: [
       { label: "Material", value: "22K Gold, Natural Emeralds, Rubies" },
       { label: "Origin", value: "Jaipur Jewels" },
@@ -657,7 +657,7 @@ const defaultProducts: Product[] = [
     description: "Statement antique gold chandbali earrings with real ruby drops. Inspired by Mughal court jewellery traditions.",
     story: "The crescent moon motif, a symbol of royal grace, adorned with uncut diamonds and cluster seed pearl fringe.",
     craftTitle: "The Craft",
-    craftText: "RepoussÃƒÆ’Ã‚Â© worked gold with antique hand-patination and micro-claw set Burmese rubies.",
+    craftText: "Repouss worked gold with antique hand-patination and micro-claw set Burmese rubies.",
     craftSpecs: [
       { label: "Material", value: "22K Antique Patinated Gold, Natural Rubies" },
       { label: "Origin", value: "Jaipur Heritage Vault" },
@@ -682,10 +682,10 @@ const defaultJewelryCategories: CategoryItem[] = [
 ];
 
 const defaultClothingVideos: VideoCard[] = [
-  { id: 1, video: 'https://www.w3schools.com/html/mov_bbb.mp4', poster: '/bespoke_bg.jpg', title: 'The Royal Drape', no: 'NÃƒâ€šÃ‚Âº 01' },
-  { id: 2, video: 'https://www.w3schools.com/html/mov_bbb.mp4', poster: '/hero-suit.jpg', title: 'Mastercraft Zardozi', no: 'NÃƒâ€šÃ‚Âº 02' },
-  { id: 3, video: 'https://www.w3schools.com/html/mov_bbb.mp4', poster: '/hero-rose-pink.jpg', title: 'Heirloom Trousseau', no: 'NÃƒâ€šÃ‚Âº 03' },
-  { id: 4, video: 'https://www.w3schools.com/html/mov_bbb.mp4', poster: 'https://images.pexels.com/photos/1113554/pexels-photo-1113554.jpeg?auto=compress&cs=tinysrgb&w=800', title: 'The Loom Heritage', no: 'NÃƒâ€šÃ‚Âº 04' }
+  { id: 1, video: 'https://www.w3schools.com/html/mov_bbb.mp4', poster: '/bespoke_bg.jpg', title: 'The Royal Drape', no: 'N 01' },
+  { id: 2, video: 'https://www.w3schools.com/html/mov_bbb.mp4', poster: '/hero-suit.jpg', title: 'Mastercraft Zardozi', no: 'N 02' },
+  { id: 3, video: 'https://www.w3schools.com/html/mov_bbb.mp4', poster: '/hero-rose-pink.jpg', title: 'Heirloom Trousseau', no: 'N 03' },
+  { id: 4, video: 'https://www.w3schools.com/html/mov_bbb.mp4', poster: 'https://images.pexels.com/photos/1113554/pexels-photo-1113554.jpeg?auto=compress&cs=tinysrgb&w=800', title: 'The Loom Heritage', no: 'N 04' }
 ];
 
 const defaultJewelryVideos: VideoCard[] = [
@@ -695,7 +695,7 @@ const defaultJewelryVideos: VideoCard[] = [
   { id: 4, video: 'https://www.w3schools.com/html/mov_bbb.mp4', poster: 'https://images.pexels.com/photos/1721937/pexels-photo-1721937.jpeg?auto=compress&cs=tinysrgb&w=800', title: 'Kundan Heritage', no: 'J 04' }
 ];
 
-// ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ 4. Zustand Store Creation ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+//  4. Zustand Store Creation 
 
 const defaultClothingReviews = [
   {
@@ -717,7 +717,7 @@ const defaultClothingReviews = [
     city: "Kolkata & Paris",
     role: "Private Client",
     bespokeOrder: "Sindoor Crimson Velvet Sherwani",
-    date: "Spring Soirée",
+    date: "Spring Soire",
     rating: 5,
     quote: "An impeccable silhouette that commands reverence without ever whispering a word.",
     testimony: "Every seam is lined with mulberry silk, and the hand-embroidered peacocks along the sleeve cuffs caught every ray of gallery light. The fitting session in the bespoke atelier set a new standard of luxury.",
@@ -732,8 +732,8 @@ const defaultClothingReviews = [
     bespokeOrder: "Ivory Zardozi Kalidar",
     date: "Winter Gala",
     rating: 5,
-    quote: "Under the arches of Villa d’Este, the antique dabka work glowed in breath-taking unison.",
-    testimony: "It is extraordinarily rare for a maison to master the loom with such aristocratic pedigree. Raani Closet does not create seasonal couture—they craft living heirlooms to be passed between generations.",
+    quote: "Under the arches of Villa dEste, the antique dabka work glowed in breath-taking unison.",
+    testimony: "It is extraordinarily rare for a maison to master the loom with such aristocratic pedigree. Raani Closet does not create seasonal couturethey craft living heirlooms to be passed between generations.",
     monogram: "DS",
     profilePhoto: "",
   },
@@ -746,7 +746,7 @@ const defaultClothingReviews = [
     date: "Summer Gala",
     rating: 5,
     quote: "The bespoke journey felt like an intimate royal ceremony from the first sketch.",
-    testimony: "From our inaugural sketches in the private salon to the final knot hand-stitched by fifth-generation Jaipur karigars. They immortalized our family’s memoirs in silk and quiet opulence.",
+    testimony: "From our inaugural sketches in the private salon to the final knot hand-stitched by fifth-generation Jaipur karigars. They immortalized our familys memoirs in silk and quiet opulence.",
     monogram: "SB",
     profilePhoto: "",
   },
@@ -785,7 +785,7 @@ const defaultJewelryReviews = [
     city: "London",
     role: "Private Vault Client",
     bespokeOrder: "Vintage Emerald Cascade",
-    date: "Spring Soirée",
+    date: "Spring Soire",
     rating: 5,
     quote: "Quiet luxury at its highest echelon. Every raw emerald droplet speaks of generational mastery.",
     testimony: "The bespoke consultation process was discreet, deeply knowledgeable, and highly personalized. The final necklace is the crown jewel of our family estate.",
@@ -847,9 +847,9 @@ export const useAdminStore = create<AdminState>()(
       setAboutUsTitle: (v) => set({ aboutUsTitle: v, hasUnsavedChanges: true }),
       aboutUsText: 'Since our inception, we have been committed to preserving the royal heritage of Indian craftsmanship. Every piece is an act of devotion, meticulously created by master artisans.',
       setAboutUsText: (v) => set({ aboutUsText: v, hasUnsavedChanges: true }),
-      marqueeTextClothing: 'ROYAL ELEGANCE ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ MASTER CRAFTED ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ BESPOKE SILHOUETTES',
+      marqueeTextClothing: 'ROYAL ELEGANCE  MASTER CRAFTED  BESPOKE SILHOUETTES',
       setMarqueeTextClothing: (v) => set({ marqueeTextClothing: v, hasUnsavedChanges: true }),
-      marqueeTextJewelry: 'POLKI HERITAGE ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ SYNDICATE DIAMONDS ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ROYAL HEIRLOOMS',
+      marqueeTextJewelry: 'POLKI HERITAGE  SYNDICATE DIAMONDS  ROYAL HEIRLOOMS',
       setMarqueeTextJewelry: (v) => set({ marqueeTextJewelry: v, hasUnsavedChanges: true }),
 
       // --- A. System & Admin UI ---
@@ -1108,9 +1108,9 @@ export const useAdminStore = create<AdminState>()(
       // --- H. Scene 6: Story, Craft & Epilogue ---
       storyHeading: 'The Imperial Archive & Heritage',
       setStoryHeading: (v) => set({ storyHeading: v, hasUnsavedChanges: true }),
-      storyText: 'Rooted in the royal courtyards of Rajputana and the poetic looms of Chanderi, Raani Closet is an ode to timeless Indian aristocracies. Every creation is an intimate dialogue between master weavers, zardozi artisans, and modern silhouettesÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âmeticulously hand-crafted over hundreds of patient hours. We do not mass-produce; we curate living heirlooms meant to be cherished across generations.',
+      storyText: 'Rooted in the royal courtyards of Rajputana and the poetic looms of Chanderi, Raani Closet is an ode to timeless Indian aristocracies. Every creation is an intimate dialogue between master weavers, zardozi artisans, and modern silhouettesmeticulously hand-crafted over hundreds of patient hours. We do not mass-produce; we curate living heirlooms meant to be cherished across generations.',
       setStoryText: (v) => set({ storyText: v, hasUnsavedChanges: true }),
-      clothingCraftText: 'Rooted in centuries of royal Rajasthani heritage, every thread tells a tale of devotion. Hand-loomed in pure Chanderi silk, enriched with real gold and silver zari, and crowned with hand-appliquÃƒÆ’Ã‚Â©d dabka embroidery that whispers quiet majesty.',
+      clothingCraftText: 'Rooted in centuries of royal Rajasthani heritage, every thread tells a tale of devotion. Hand-loomed in pure Chanderi silk, enriched with real gold and silver zari, and crowned with hand-appliqud dabka embroidery that whispers quiet majesty.',
       setClothingCraftText: (v) => set({ clothingCraftText: v, hasUnsavedChanges: true }),
       jewelryCraftText: 'Each piece is an act of high reverence. Our Jaipur master craftsmen spend weeks perfecting the setting of each uncut Polki diamond within 22K hallmarked gold foil, accented by Zambian emerald drops and Basra seed pearls that have adorned royalty for centuries.',
       setJewelryCraftText: (v) => set({ jewelryCraftText: v, hasUnsavedChanges: true }),
@@ -1118,7 +1118,7 @@ export const useAdminStore = create<AdminState>()(
       setStoryEpilogueQuote: (v) => set({ storyEpilogueQuote: v, hasUnsavedChanges: true }),
       storyEpilogueSignature: 'The Master Artisans',
       setStoryEpilogueSignature: (v) => set({ storyEpilogueSignature: v, hasUnsavedChanges: true }),
-      storyEpilogueSubtext: 'Raani Closet Atelier ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Jaipur & New Delhi',
+      storyEpilogueSubtext: 'Raani Closet Atelier  Jaipur & New Delhi',
       setStoryEpilogueSubtext: (v) => set({ storyEpilogueSubtext: v, hasUnsavedChanges: true }),
 
       // --- I. Scene 7: Imperial Concierge & Footer ---
@@ -1169,14 +1169,14 @@ export const useAdminStore = create<AdminState>()(
         setAddressJaipurTitle: (v) => set({ addressJaipurTitle: v, hasUnsavedChanges: true }),
         addressJaipur: 'Narain Niwas Palace Courtyard, C-Scheme, Rajasthan',
         setAddressJaipur: (v) => set({ addressJaipur: v, hasUnsavedChanges: true }),
-        addressDelhiTitle: 'Salon Privé (New Delhi)',
+        addressDelhiTitle: 'Salon Priv (New Delhi)',
         setAddressDelhiTitle: (v) => set({ addressDelhiTitle: v, hasUnsavedChanges: true }),
         addressDelhi: 'The Crescent at Qutab, Mehrauli Heritage Quarter',
         setAddressDelhi: (v) => set({ addressDelhi: v, hasUnsavedChanges: true }),
         footerWhatsappLabel: 'VIP WhatsApp Line',
         setFooterWhatsappLabel: (v) => set({ footerWhatsappLabel: v, hasUnsavedChanges: true }),
 
-        copyrightText: '© 2026 Maison Raani. All Rights Reserved.',
+        copyrightText: ' 2026 Maison Raani. All Rights Reserved.',
         setCopyrightText: (v) => set({ copyrightText: v, hasUnsavedChanges: true }),
         privacyText: 'Privacy',
         setPrivacyText: (v) => set({ privacyText: v, hasUnsavedChanges: true }),
@@ -1264,18 +1264,18 @@ export const useAdminStore = create<AdminState>()(
           clothingVideos: defaultClothingVideos,
           jewelryVideos: defaultJewelryVideos,
           storyHeading: 'The Imperial Archive & Heritage',
-          storyText: 'Rooted in the royal courtyards of Rajputana and the poetic looms of Chanderi, Raani Closet is an ode to timeless Indian aristocracies. Every creation is an intimate dialogue between master weavers, zardozi artisans, and modern silhouettesÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Âmeticulously hand-crafted over hundreds of patient hours. We do not mass-produce; we curate living heirlooms meant to be cherished across generations.',
-          clothingCraftText: 'Rooted in centuries of royal Rajasthani heritage, every thread tells a tale of devotion. Hand-loomed in pure Chanderi silk, enriched with real gold and silver zari, and crowned with hand-appliquÃƒÆ’Ã‚Â©d dabka embroidery that whispers quiet majesty.',
+          storyText: 'Rooted in the royal courtyards of Rajputana and the poetic looms of Chanderi, Raani Closet is an ode to timeless Indian aristocracies. Every creation is an intimate dialogue between master weavers, zardozi artisans, and modern silhouettesmeticulously hand-crafted over hundreds of patient hours. We do not mass-produce; we curate living heirlooms meant to be cherished across generations.',
+          clothingCraftText: 'Rooted in centuries of royal Rajasthani heritage, every thread tells a tale of devotion. Hand-loomed in pure Chanderi silk, enriched with real gold and silver zari, and crowned with hand-appliqud dabka embroidery that whispers quiet majesty.',
           jewelryCraftText: 'Each piece is an act of high reverence. Our Jaipur master craftsmen spend weeks perfecting the setting of each uncut Polki diamond within 22K hallmarked gold foil, accented by Zambian emerald drops and Basra seed pearls that have adorned royalty for centuries.',
           storyEpilogueQuote: 'Preserving the royal threads of Rajasthan, one bespoke silhouette at a time.',
           storyEpilogueSignature: 'The Master Artisans',
-          storyEpilogueSubtext: 'Raani Closet Atelier ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Jaipur & New Delhi',
+          storyEpilogueSubtext: 'Raani Closet Atelier  Jaipur & New Delhi',
           footerConciergeEyebrow: 'The Digital Sanctuary',
           footerConciergeTitle: 'Imperial Concierge',
           footerConciergeText: 'An exclusive enclave dedicated to the preservation of Indian royal heritage. From bespoke zardozi bridal trousseaus to archival polki jewelry, Raani Closet offers private commissions and digital styling engagements for the modern aristocrat.',
           addressJaipur: 'Narain Niwas Palace Courtyard, C-Scheme, Rajasthan',
           addressDelhi: 'The Crescent at Qutab, Mehrauli Heritage Quarter',
-          copyrightText: 'Ãƒâ€šÃ‚Â© 2026 Maison Raani. All Rights Reserved.',
+          copyrightText: ' 2026 Maison Raani. All Rights Reserved.',
           trendingSearchesClothing: ['Bridal Lehenga', 'Silk Kurti', 'Chanderi Suit', 'Velvet Anarkali', 'Georgette Dupatta'],
           trendingSearchesJewelry: ['Kundan Choker', 'Polki Haar', 'Jadau Bangles', 'Pearl Mathapatti', 'Chandbali Earrings'],
           searchSynonyms: { "red": "crimson", "green": "emerald", "blue": "sapphire" },

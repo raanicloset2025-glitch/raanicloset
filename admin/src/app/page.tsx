@@ -245,7 +245,7 @@ export default function AdminDashboard() {
       </aside>
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 h-screen overflow-hidden flex flex-col relative bg-[#FAFAFA]">
+      <main className="flex-1 h-screen overflow-hidden flex flex-col relative bg-[#FAFAFA] min-w-0">
         {/* Mobile Header for Admin Panel */}
         <div className="md:hidden bg-white border-b border-[#EAEAEA] p-4 flex justify-between items-center shrink-0 shadow-sm z-30">
           <div className="font-serif text-lg tracking-[0.2em] uppercase text-[#1A0B16] font-bold">Raani</div>

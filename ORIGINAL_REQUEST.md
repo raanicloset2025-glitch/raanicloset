@@ -213,3 +213,130 @@ Locate all Service Worker registrations (e.g. `next-pwa` in `next.config.ts`, `s
 The current local time is: 2026-10-09T14:08:08+05:30.
 </ADDITIONAL_METADATA>
 
+## 2026-10-09T09:38:07Z
+
+<USER_REQUEST>
+# Teamwork Project Prompt
+
+> Requested team: Small focused team (Refactor & Bugfix)
+
+Refactor and stabilize the Supabase OTP (Email Magic Link) login logic in both Admin and Frontend to completely eliminate 'Token has expired or is invalid' errors and erratic behavior.
+
+Working directory: C:/Users/satya/Documents/antigravity/modest-hypatia
+
+## Requirements
+
+### R1. OTP State & Double-Click Prevention
+Investigate the OTP request and verification flow in dmin/src/app/login/page.tsx and rontend/src/components/AuthModal.tsx. Implement robust loading states and button disabling to prevent users from double-clicking the 'Verify' or 'Send OTP' buttons, which invalidates tokens and causes race conditions.
+
+### R2. Input Sanitization & Error Handling
+Ensure email inputs are strictly sanitized (trimmed, lowercase) before requesting or verifying an OTP. Implement clear, user-friendly error messages for expired tokens, rate limits, or network failures. Reset the OTP input field automatically if verification fails, prompting the user to try again cleanly.
+
+## Acceptance Criteria
+
+### Verification
+- [ ] Users cannot double-click the OTP request or verify buttons (buttons are disabled while authLoading is true).
+- [ ] If an invalid or expired OTP is entered, the UI gracefully displays a clear error and allows the user to easily request a new one without breaking the state.
+- [ ] Both Admin and Frontend build successfully (npm run build) with zero TypeScript errors.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-10-09T15:08:07+05:30.
+</ADDITIONAL_METADATA>
+
+## 2026-10-09T09:44:50Z
+
+<USER_REQUEST>
+This is a single self-contained fix; keep it small and focused.
+
+Fix the Supabase OTP (Email Magic Link) login bugs in both Admin and Frontend.
+
+Working directory: C:/Users/satya/Documents/antigravity/modest-hypatia
+
+## Requirements
+
+### R1. Double-Click Prevention
+In `admin/src/app/login/page.tsx` and `frontend/src/components/AuthModal.tsx`, add robust loading/disabled states on the 'Send OTP' and 'Verify OTP' buttons so they cannot be clicked twice. A second click while the first request is in-flight must be ignored. This prevents token invalidation from race conditions.
+
+### R2. Error Handling & Input Cleanup
+Sanitize email (trim + lowercase) before sending OTP. If OTP verification fails (expired, invalid, rate-limit), show a clear user-friendly error message AND clear the OTP input field so the user can try again without manually clearing it.
+
+## Acceptance Criteria
+- [ ] 'Send OTP' and 'Verify' buttons are disabled (and show a spinner or 'Loading...') while a request is in-flight.
+- [ ] After a failed OTP verify, the OTP input is cleared automatically and an error message is shown.
+- [ ] `npm run build` passes in both `admin` and `frontend` with zero TypeScript errors.
+- [ ] No UI design, colors, or animations are changed — only logic and state management.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-10-09T15:14:50+05:30.
+</ADDITIONAL_METADATA>
+
+## 2026-10-09T14:52:05Z
+
+<USER_REQUEST>
+# Teamwork Project Prompt
+
+> Requested team: Full Team
+
+Conduct a comprehensive stability and bug-fixing pass across the entire 'modest-hypatia' Next.js project (both `admin` and `frontend`). Fix React hydration errors, component crashes (especially in admin editors like Hero Canvas), and responsive layout overflows on mobile. Make the project production-ready and stable.
+
+Working directory: C:/Users/satya/Documents/antigravity/modest-hypatia
+Integrity mode: development
+
+## Requirements
+
+### R1. Resolve React Crashes (Error Boundaries)
+Identify and fix the root cause of the "This page couldn't load" React error boundary crashes in the Admin panel when navigating between sidebar tabs (e.g., Hero Canvas, Categories). Ensure deleted or dynamically imported components (like `InstallAppButton`) do not cause fatal module not found errors or hydration mismatches.
+
+### R2. Fix Mobile Responsiveness & Layout Overflows
+Fix layout containers across the Admin panel (especially `CategoryProductEditor`) so they wrap or scroll gracefully. No elements should overflow horizontally off the screen (`100vw`) on mobile devices when multiple items or products are added. Ensure it feels like a stable, industry-standard application.
+
+### R3. Stabilize Global State & Caching
+Ensure Zustand state updates don't cause infinite re-renders across the editor panels. Verify that any lingering `fetch("/api/...")` calls in the admin editors are fully replaced with the correct Supabase client logic or local state, preventing network timeout crashes.
+
+## Acceptance Criteria
+
+### Programmatic & Visual Verification
+- [ ] Both `admin` and `frontend` pass `npm run build` with zero Next.js or TypeScript errors.
+- [ ] An automated check or independent Agent-as-Judge verifies that navigating through every Admin sidebar tab does not trigger a React Error Boundary.
+- [ ] An independent Agent-as-Judge verifies that adding 10 categories/products on a simulated 375px (mobile) viewport results in zero horizontal body overflow.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-10-09T20:22:05+05:30.
+</ADDITIONAL_METADATA>
+
+## 2026-10-09T15:01:43Z
+
+<USER_REQUEST>
+# Teamwork Project Prompt
+
+> Requested team: Full Team
+
+Conduct a comprehensive stability and bug-fixing pass across the entire 'modest-hypatia' Next.js project (both `admin` and `frontend`). Fix React hydration errors, component crashes (especially in admin editors like Hero Canvas), and responsive layout overflows on mobile. Make the project production-ready and stable.
+
+Working directory: C:/Users/satya/Documents/antigravity/modest-hypatia
+Integrity mode: development
+
+## Requirements
+
+### R1. Resolve React Crashes (Error Boundaries)
+Identify and fix the root cause of the "This page couldn't load" React error boundary crashes in the Admin panel when navigating between sidebar tabs (e.g., Hero Canvas, Categories). Ensure deleted or dynamically imported components (like `InstallAppButton`) do not cause fatal module not found errors or hydration mismatches.
+
+### R2. Fix Mobile Responsiveness & Layout Overflows
+Fix layout containers across the Admin panel (especially `CategoryProductEditor`) so they wrap or scroll gracefully. No elements should overflow horizontally off the screen (`100vw`) on mobile devices when multiple items or products are added. Ensure it feels like a stable, industry-standard application.
+
+### R3. Stabilize Global State & Caching
+Ensure Zustand state updates don't cause infinite re-renders across the editor panels. Verify that any lingering `fetch("/api/...")` calls in the admin editors are fully replaced with the correct Supabase client logic or local state, preventing network timeout crashes.
+Frontend design should not change, nor the animations, only it should work properly.
+
+## Acceptance Criteria
+
+### Programmatic & Visual Verification
+- [ ] Both `admin` and `frontend` pass `npm run build` with zero Next.js or TypeScript errors.
+- [ ] An automated check or independent Agent-as-Judge verifies that navigating through every Admin sidebar tab does not trigger a React Error Boundary.
+- [ ] An independent Agent-as-Judge verifies that adding 10 categories/products on a simulated 375px (mobile) viewport results in zero horizontal body overflow.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-10-09T20:31:43+05:30.
+</ADDITIONAL_METADATA>
+
+

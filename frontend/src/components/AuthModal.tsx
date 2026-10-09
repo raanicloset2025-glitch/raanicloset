@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '@/store/useStore';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -11,6 +11,7 @@ export default function AuthModal() {
   const authError = useStore((state) => state.authError);
   const setAuthError = useStore((state) => state.setAuthError);
   
+  const inFlightRef = useRef(false);
   const [step, setStep] = useState<'email' | 'otp' | 'google-loading'>('email');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
@@ -28,8 +29,11 @@ export default function AuthModal() {
   }, [authError]);
 
   const handleClose = () => {
+    if (inFlightRef.current || authLoading) return;
     setErrorMsg("");
     setAuthError(null);
+    setOtp("");
+    setStep('email');
     setAuthModalOpen(false);
   };
 
@@ -50,10 +54,15 @@ export default function AuthModal() {
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (inFlightRef.current || authLoading) return;
+
     const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail || resendCooldown > 0 || authLoading) return;
+    setEmail(cleanEmail);
+
+    if (!cleanEmail || resendCooldown > 0) return;
 
     setErrorMsg("");
+    inFlightRef.current = true;
     setAuthLoading(true);
 
     try {
@@ -65,30 +74,44 @@ export default function AuthModal() {
       });
 
       if (error) {
-        setErrorMsg(error.message);
+        const msg = error.message.toLowerCase();
+        if (msg.includes("rate") || msg.includes("too many")) {
+          setErrorMsg("Too many requests. Please wait a moment before trying again.");
+        } else {
+          setErrorMsg(error.message);
+        }
       } else {
         setResendCooldown(60);
         setStep('otp');
       }
     } catch (err: any) {
       console.error("[AuthModal] OTP request failed:", err);
-      setErrorMsg(err?.message || "Failed to send verification code. Please check your network.");
+      const msg = (err?.message || "").toLowerCase();
+      if (msg.includes("rate") || msg.includes("too many")) {
+        setErrorMsg("Too many requests. Please wait a moment before trying again.");
+      } else {
+        setErrorMsg(err?.message || "Failed to send verification code. Please check your network.");
+      }
     } finally {
+      inFlightRef.current = false;
       setAuthLoading(false);
     }
   };
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (inFlightRef.current || authLoading) return;
+
     const cleanOtp = otp.trim();
     const cleanEmail = email.trim().toLowerCase();
 
-    if (cleanOtp.length < 6 || authLoading) {
-      if (cleanOtp.length < 6) setErrorMsg("Please enter the complete 6-digit code.");
+    if (cleanOtp.length < 6) {
+      setErrorMsg("Please enter the complete 6-digit code.");
       return;
     }
 
     setErrorMsg("");
+    inFlightRef.current = true;
     setAuthLoading(true);
 
     try {
@@ -99,23 +122,45 @@ export default function AuthModal() {
       });
 
       if (error) {
-        setErrorMsg(error.message);
+        const msg = error.message.toLowerCase();
+        if (msg.includes("expired") || msg.includes("invalid") || msg.includes("token")) {
+          setErrorMsg("Invalid or expired verification code. Please try again.");
+        } else if (msg.includes("rate") || msg.includes("too many")) {
+          setErrorMsg("Too many attempts. Please wait a moment before trying again.");
+        } else {
+          setErrorMsg(error.message);
+        }
         setOtp(""); // Auto-clear OTP field on failure so user can re-enter
       } else if (data?.user) {
         setAuthModalOpen(false);
         setOtp("");
         setStep('email');
+      } else {
+        setErrorMsg("Verification failed. Please try again.");
+        setOtp("");
       }
     } catch (err: any) {
       console.error("[AuthModal] Verification failed:", err);
-      setErrorMsg(err?.message || "Verification failed. Please try again.");
+      const msg = (err?.message || "").toLowerCase();
+      if (msg.includes("expired") || msg.includes("invalid") || msg.includes("token")) {
+        setErrorMsg("Invalid or expired verification code. Please try again.");
+      } else if (msg.includes("rate") || msg.includes("too many")) {
+        setErrorMsg("Too many attempts. Please wait a moment before trying again.");
+      } else {
+        setErrorMsg(err?.message || "Verification failed. Please try again.");
+      }
+      setOtp("");
     } finally {
+      inFlightRef.current = false;
       setAuthLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
+    if (inFlightRef.current || authLoading) return;
     setErrorMsg("");
+    inFlightRef.current = true;
+    setAuthLoading(true);
     setStep('google-loading');
 
     try {
@@ -134,6 +179,9 @@ export default function AuthModal() {
       console.error("[AuthModal] Google OAuth failed:", err);
       setErrorMsg(err?.message || "Google sign-in initialization failed. Please try again.");
       setStep('email');
+    } finally {
+      inFlightRef.current = false;
+      setAuthLoading(false);
     }
   };
 
@@ -142,7 +190,9 @@ export default function AuthModal() {
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/40 backdrop-blur-md"
-        onClick={handleClose}
+        onClick={() => {
+          if (!authLoading && !inFlightRef.current) handleClose();
+        }}
       ></div>
 
       {/* Modal Content */}
@@ -156,7 +206,8 @@ export default function AuthModal() {
         <button 
           type="button"
           onClick={handleClose}
-          className={`absolute top-6 right-6 z-50 p-2 rounded-full transition-colors ${
+          disabled={authLoading}
+          className={`absolute top-6 right-6 z-50 p-2 rounded-full transition-colors disabled:opacity-50 ${
             isJewelry ? 'hover:bg-white/10' : 'hover:bg-black/5'
           }`}
         >
@@ -193,10 +244,11 @@ export default function AuthModal() {
                   type="text" 
                   required
                   maxLength={6}
+                  disabled={authLoading}
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                   placeholder="6-Digit OTP"
-                  className={`w-full h-12 px-4 border-b bg-transparent outline-none font-sans text-center text-lg tracking-[0.5em] transition-colors ${
+                  className={`w-full h-12 px-4 border-b bg-transparent outline-none font-sans text-center text-lg tracking-[0.5em] transition-colors disabled:opacity-50 ${
                     isJewelry 
                       ? 'border-slate-700 focus:border-[#CBA153] text-[#E8E0D0] placeholder-slate-600' 
                       : 'border-[#E0A29C]/30 focus:border-[#CBA153] text-[#1A1A1A] placeholder-[#3B2F2F]/40'
@@ -230,12 +282,19 @@ export default function AuthModal() {
                   isJewelry ? 'text-slate-400 hover:text-white' : 'text-[#603D3D] hover:text-black'
                 }`}
               >
-                {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend OTP"}
+                {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : authLoading ? "Sending..." : "Resend OTP"}
               </button>
               <button 
                 type="button"
-                onClick={() => setStep('email')}
-                className={`w-full text-center font-sans text-[10px] uppercase tracking-[0.2em] transition-colors ${
+                onClick={() => {
+                  if (!authLoading && !inFlightRef.current) {
+                    setErrorMsg("");
+                    setOtp("");
+                    setStep('email');
+                  }
+                }}
+                disabled={authLoading}
+                className={`w-full text-center font-sans text-[10px] uppercase tracking-[0.2em] transition-colors disabled:opacity-50 ${
                   isJewelry ? 'text-slate-400 hover:text-white' : 'text-[#603D3D] hover:text-black'
                 }`}
               >
@@ -257,10 +316,11 @@ export default function AuthModal() {
                 <input 
                   type="email" 
                   required
+                  disabled={authLoading}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Email Address"
-                  className={`w-full h-12 px-4 border-b bg-transparent outline-none font-sans text-sm tracking-wide transition-colors ${
+                  className={`w-full h-12 px-4 border-b bg-transparent outline-none font-sans text-sm tracking-wide transition-colors disabled:opacity-50 ${
                     isJewelry 
                       ? 'border-slate-700 focus:border-[#CBA153] text-[#E8E0D0] placeholder-slate-600' 
                       : 'border-[#E0A29C]/30 focus:border-[#CBA153] text-[#1A1A1A] placeholder-[#3B2F2F]/40'
@@ -294,7 +354,8 @@ export default function AuthModal() {
             <button 
               type="button"
               onClick={handleGoogleLogin}
-              className={`w-full h-12 flex items-center justify-center gap-3 font-sans text-[10px] uppercase tracking-[0.2em] font-semibold transition-all duration-300 border ${
+              disabled={authLoading}
+              className={`w-full h-12 flex items-center justify-center gap-3 font-sans text-[10px] uppercase tracking-[0.2em] font-semibold transition-all duration-300 border disabled:opacity-50 ${
                 isJewelry 
                   ? 'border-slate-700 hover:bg-white/5 text-[#E8E0D0]' 
                   : 'border-[#E0A29C]/30 hover:bg-black/5 text-[#1A1A1A]'
