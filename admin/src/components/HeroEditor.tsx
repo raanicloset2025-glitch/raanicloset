@@ -23,9 +23,11 @@ export default function HeroEditor() {
     return unsub;
   }, []);
 
-  if (!mounted || !store.setBrandName) return null;
   const [activeMode, setActiveMode] = useState<"clothing" | "jewelry">("clothing");
   const [devicePreview, setDevicePreview] = useState<"desktop" | "mobile">("desktop");
+
+  if (!mounted || !store.setBrandName) return null;
+
 
   const current = activeMode === "clothing" ? {
     videoVp9: store.clothingHeroVideo || "",

@@ -43,8 +43,10 @@ export default function FooterEditor() {
     return unsub;
   }, []);
 
-  if (!mounted || !store.setBrandName) return null;
   const [activeTab, setActiveTab] = useState<typeof TABS[number]['id']>('concierge');
+
+  if (!mounted || !store.setBrandName) return null;
+
 
   return (
     <div className="w-full h-full flex flex-col bg-white">

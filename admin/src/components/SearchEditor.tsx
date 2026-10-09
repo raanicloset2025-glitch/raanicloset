@@ -22,8 +22,6 @@ export default function SearchEditor() {
     return unsub;
   }, []);
 
-  if (!mounted || !store.setTrendingSearchesClothing) return null;
-
   const {
     trendingSearchesClothing,
     setTrendingSearchesClothing,
@@ -46,6 +44,9 @@ export default function SearchEditor() {
 
   const [newSynonymKey, setNewSynonymKey] = useState("");
   const [newSynonymValue, setNewSynonymValue] = useState("");
+
+  if (!mounted || !store.setTrendingSearchesClothing) return null;
+
 
   const toggleSelection = (
     id: string,

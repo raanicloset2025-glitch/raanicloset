@@ -22,9 +22,10 @@ export default function NavbarEditor() {
     return unsub;
   }, []);
 
-  if (!mounted || !store.setBrandName) return null;
-  
   const [uploadingLogoType, setUploadingLogoType] = React.useState<'clothing' | 'jewelry' | 'tab' | null>(null);
+
+  if (!mounted || !store.setBrandName) return null;
+
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'clothing' | 'jewelry' | 'tab') => {
     const file = e.target.files?.[0];
