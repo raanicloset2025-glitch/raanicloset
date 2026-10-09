@@ -14,7 +14,7 @@ export async function uploadMedia(file: Blob, fileName = "upload"): Promise<stri
   try {
     return await uploadMediaToSupabase(
       file,
-      "raani closet image and product",
+      "raani-closet-images",
       filePath,
       file.type || (isVideo ? "video/mp4" : "image/webp")
     );
@@ -23,7 +23,17 @@ export async function uploadMedia(file: Blob, fileName = "upload"): Promise<stri
     const form = new FormData();
     form.append("file", file, fileName);
 
-    const res = await fetch("/api/upload", { method: "POST", body: form });
+    const authData = localStorage.getItem('raani_admin_auth_token');
+    let token = '';
+    if (authData) {
+      try { token = JSON.parse(authData).session.access_token; } catch(e) {}
+    }
+
+    const res = await fetch("/api/upload", { 
+      method: "POST", 
+      body: form,
+      headers: token ? { "Authorization": `Bearer ${token}` } : {}
+    });
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok || !data?.url) {

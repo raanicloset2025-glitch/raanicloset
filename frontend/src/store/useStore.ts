@@ -104,7 +104,13 @@ export const useStore = create<AppState>()(persist((set) => ({
           ? decodeURIComponent(errorDesc.replace(/\+/g, ' '))
           : (err || 'Authentication failed');
         set({ authError: message, isAuthModalOpen: true, isAuthLoading: false, authInitialized: true });
-        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        const newParams = new URLSearchParams(window.location.search);
+        newParams.delete('error');
+        newParams.delete('error_description');
+        newParams.delete('error_code');
+        const newSearch = newParams.toString() ? `?${newParams.toString()}` : '';
+        window.history.replaceState({}, document.title, window.location.pathname + newSearch);
       }
     }
 
@@ -127,7 +133,13 @@ export const useStore = create<AppState>()(persist((set) => ({
 
           // Clean up any remaining auth parameters from the URL
           if (typeof window !== 'undefined' && (window.location.search.includes('code=') || window.location.search.includes('error='))) {
-            window.history.replaceState({}, document.title, window.location.pathname);
+            const newParams = new URLSearchParams(window.location.search);
+            newParams.delete('code');
+            newParams.delete('error');
+            newParams.delete('error_description');
+            newParams.delete('error_code');
+            const newSearch = newParams.toString() ? `?${newParams.toString()}` : '';
+            window.history.replaceState({}, document.title, window.location.pathname + newSearch);
           }
         } else {
           set({ user: null, isAuthLoading: false, authInitialized: true });
@@ -155,7 +167,10 @@ export const useStore = create<AppState>()(persist((set) => ({
 
         // Clean up code parameter from address bar on successful sign-in
         if (typeof window !== 'undefined' && window.location.search.includes('code=')) {
-          window.history.replaceState({}, document.title, window.location.pathname);
+          const newParams = new URLSearchParams(window.location.search);
+          newParams.delete('code');
+          const newSearch = newParams.toString() ? `?${newParams.toString()}` : '';
+          window.history.replaceState({}, document.title, window.location.pathname + newSearch);
         }
       } else {
         set({ user: null, isAuthLoading: false, authInitialized: true });

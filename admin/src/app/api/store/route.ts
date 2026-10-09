@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getStoreState, saveStoreState } from "@/lib/d1";
+import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,20 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const authHeader = request.headers.get("Authorization");
+    if (!authHeader) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: CORS_HEADERS });
+    }
+    const token = authHeader.replace("Bearer ", "");
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+    if (supabaseUrl && supabaseKey) {
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const { data: { user }, error } = await supabase.auth.getUser(token);
+      if (error || !user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: CORS_HEADERS });
+      }
+    }
     const bodyText = await request.text();
     if (!bodyText || !bodyText.trim()) {
       return NextResponse.json(

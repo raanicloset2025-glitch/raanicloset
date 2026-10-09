@@ -11,6 +11,7 @@ pub struct Category {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct Product {
     pub id: String,
     pub title: String,

@@ -2,24 +2,34 @@ import fs from "fs";
 import path from "path";
 
 // Locate store_db.json across varying working directories
-function findDbFile(): string {
-  const candidates = [
-    path.join(process.cwd(), "store_db.json"),
-    path.join(process.cwd(), "frontend", "store_db.json"),
-    path.join(process.cwd(), "..", "frontend", "store_db.json"),
-  ];
-  for (const c of candidates) {
-    if (fs.existsSync(c)) return c;
+function findDbFile(): string | null {
+  try {
+    if (typeof process === "undefined" || !process.cwd) return null;
+    const fs = require("fs");
+    const path = require("path");
+    const candidates = [
+      path.join(process.cwd(), "store_db.json"),
+      path.join(process.cwd(), "frontend", "store_db.json"),
+      path.join(process.cwd(), "..", "frontend", "store_db.json"),
+    ];
+    for (const c of candidates) {
+      if (fs.existsSync(c)) return c;
+    }
+    return candidates[0];
+  } catch (e) {
+    return null;
   }
-  return candidates[0];
 }
 
 function getLocalState(): Record<string, any> {
   try {
     const dbFile = findDbFile();
-    if (fs.existsSync(dbFile)) {
-      const raw = fs.readFileSync(dbFile, "utf-8");
-      return JSON.parse(raw);
+    if (dbFile) {
+      const fs = require("fs");
+      if (fs.existsSync(dbFile)) {
+        const raw = fs.readFileSync(dbFile, "utf-8");
+        return JSON.parse(raw);
+      }
     }
   } catch (err) {
     console.warn("[Frontend D1] Failed to read store_db.json fallback:", err);
@@ -30,7 +40,10 @@ function getLocalState(): Record<string, any> {
 function saveLocalState(state: any): void {
   try {
     const dbFile = findDbFile();
-    fs.writeFileSync(dbFile, JSON.stringify(state, null, 2), "utf-8");
+    if (dbFile) {
+      const fs = require("fs");
+      fs.writeFileSync(dbFile, JSON.stringify(state, null, 2), "utf-8");
+    }
   } catch (err) {
     console.error("[Frontend D1] Failed to write store_db.json fallback:", err);
   }

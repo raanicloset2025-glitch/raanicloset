@@ -147,9 +147,18 @@ export default function AdminDashboard() {
         Object.entries(stateObj).filter(([_, v]) => typeof v !== 'function')
       );
 
+      const authData = localStorage.getItem('raani_admin_auth_token');
+      let token = '';
+      if (authData) {
+        try { token = JSON.parse(authData).session.access_token; } catch(e) {}
+      }
+
       const res = await fetch("/api/store", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
         body: JSON.stringify(payload),
       });
 
