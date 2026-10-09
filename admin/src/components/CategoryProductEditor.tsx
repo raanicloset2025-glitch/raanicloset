@@ -232,7 +232,7 @@ export default function CategoryProductEditor() {
             <span className="text-[10px] text-[#888]">Click any category card to view & add its products</span>
           </div>
 
-          <div className="flex items-center gap-4 overflow-x-auto pb-4 scroll-smooth hide-scrollbar">
+          <div className="flex items-center gap-4 overflow-x-auto pb-4 scroll-smooth hide-scrollbar justify-start md:justify-center flex-nowrap touch-pan-x" style={{ WebkitOverflowScrolling: 'touch' }}>
             <AnimatePresence>
               {activeCategories.map((cat) => {
                 const isSelected = activeCat?.id === cat.id;
