@@ -100,6 +100,7 @@ export default function AuthModal() {
 
       if (error) {
         setErrorMsg(error.message);
+        setOtp(""); // Auto-clear OTP field on failure so user can re-enter
       } else if (data?.user) {
         setAuthModalOpen(false);
         setOtp("");

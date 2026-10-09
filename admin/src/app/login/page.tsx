@@ -160,6 +160,7 @@ export default function LoginPage() {
 
       if (error) {
         setErrorMsg(error.message);
+        setOtp(""); // Auto-clear OTP so admin can re-enter fresh code
       } else if (data?.session || data?.user) {
         const isAdmin = await verifyAdminStatus(data.session);
         if (isAdmin) router.push("/");
