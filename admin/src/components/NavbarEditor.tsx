@@ -22,6 +22,8 @@ export default function NavbarEditor() {
     return unsub;
   }, []);
 
+  if (!mounted || !store.setBrandName) return null;
+  
   const [uploadingLogoType, setUploadingLogoType] = React.useState<'clothing' | 'jewelry' | 'tab' | null>(null);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'clothing' | 'jewelry' | 'tab') => {
@@ -43,7 +45,8 @@ export default function NavbarEditor() {
       }
     }
   };
-  if (!mounted || !store.setBrandName) return null;
+
+  return (
     <div className="flex-1 overflow-y-auto p-4 md:p-12 lg:p-16 flex justify-center bg-white h-full">
       <div className="w-full max-w-2xl space-y-12 pb-24">
         <div className="border-b border-[#F0F0F0] pb-6">

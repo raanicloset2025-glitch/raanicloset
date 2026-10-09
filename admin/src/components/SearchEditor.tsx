@@ -22,6 +22,8 @@ export default function SearchEditor() {
     return unsub;
   }, []);
 
+  if (!mounted || !store.setTrendingSearchesClothing) return null;
+
   const {
     trendingSearchesClothing,
     setTrendingSearchesClothing,
@@ -95,7 +97,8 @@ export default function SearchEditor() {
     delete newSynonyms[key];
     setSearchSynonyms(newSynonyms);
   };
-  if (!mounted || !store.setTrendingSearchesClothing) return null;
+
+  return (
     <div className="max-w-5xl mx-auto p-6 md:p-10 space-y-12 pb-32">
       <div>
         <h2 className="text-2xl font-serif text-[#1A0B16] font-bold mb-2">Search & Discovery</h2>
@@ -226,7 +229,7 @@ export default function SearchEditor() {
               <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
                 {clothingCategories?.map((cat: any) => {
                   const isSelected = (searchCollectionsClothing || []).includes(cat.id);
-  if (!mounted || !store.setTrendingSearchesClothing) return null;
+                  return (
                     <div 
                       key={cat.id} 
                       onClick={() => toggleSelection(cat.id, searchCollectionsClothing, setSearchCollectionsClothing)}
@@ -255,7 +258,7 @@ export default function SearchEditor() {
               <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
                 {jewelryCategories?.map((cat: any) => {
                   const isSelected = (searchCollectionsJewelry || []).includes(cat.id);
-  if (!mounted || !store.setTrendingSearchesClothing) return null;
+                  return (
                     <div 
                       key={cat.id} 
                       onClick={() => toggleSelection(cat.id, searchCollectionsJewelry, setSearchCollectionsJewelry)}
@@ -296,7 +299,7 @@ export default function SearchEditor() {
               <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
                 {products?.filter((p: any) => p.type === 'clothing').map((p: any) => {
                   const isSelected = (searchSignatureClothing || []).includes(p.id);
-  if (!mounted || !store.setTrendingSearchesClothing) return null;
+                  return (
                     <div 
                       key={p.id} 
                       onClick={() => toggleSelection(p.id, searchSignatureClothing, setSearchSignatureClothing)}
@@ -325,7 +328,7 @@ export default function SearchEditor() {
               <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-3">
                 {products?.filter((p: any) => p.type === 'jewelry').map((p: any) => {
                   const isSelected = (searchSignatureJewelry || []).includes(p.id);
-  if (!mounted || !store.setTrendingSearchesClothing) return null;
+                  return (
                     <div 
                       key={p.id} 
                       onClick={() => toggleSelection(p.id, searchSignatureJewelry, setSearchSignatureJewelry)}

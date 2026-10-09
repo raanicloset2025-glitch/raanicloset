@@ -29,6 +29,8 @@ export default function BespokeEditor() {
     return unsub;
   }, []);
 
+  if (!mounted || !store.setBespokeEyebrow) return null;
+
   const current = {
     videoVp9: activeMode === 'clothing' ? store.clothingBespokeVideo : store.jewelryBespokeVideo,
     imageAvif: activeMode === 'clothing' ? store.clothingBespokeFallbackImage || store.clothingBespokeBg : store.jewelryBespokeFallbackImage || store.jewelryBespokeBg,
@@ -54,7 +56,8 @@ export default function BespokeEditor() {
       if (field === 'subtitle') store.setJewelryBespokeSubtitle(value);
     }
   };
-  if (!mounted || !store.setBespokeEyebrow) return null;
+
+  return (
     <div className="flex-1 flex flex-col h-full bg-[#080808] text-neutral-200 selection:bg-[#CBA153]/30 overflow-y-auto font-sans">
       <header className="h-16 border-b border-white/5 bg-neutral-950/80 backdrop-blur-xl px-6 md:px-10 flex items-center justify-between sticky top-0 z-50 shrink-0">
         <div className="flex items-center gap-4">
